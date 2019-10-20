@@ -1,0 +1,197 @@
+﻿@model AgnosCMS.Models.CMSDeliveryInfoViewModels
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+@using AgnosModel.Service;
+
+@{
+    ViewBag.Title = Resource.Delivery + " " + Resource.Detail;
+    var readView = false;
+    if (Model.Modify == null || Model.Modify.Value == false)
+    {
+        readView = true;
+    }
+    if (Model.Completed != null && Model.Completed.Value) { readView = true; }
+}
+<script type="text/javascript">
+    function Add_Product_Onclick() {
+        var rowcount = $('#ProductDataTable > tbody >tr').length;
+        var index = rowcount;
+        var data = { pIndex: rowcount };
+        $.ajax({
+            url: '@Url.Action("AddProduct", "CMS")',
+            data: data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                var str = '<tr  id="lrow-' + rowcount + '">';
+                str = str + data + '</tr>';
+                $('#ProductDataTable > tbody').append(str);
+            }
+        });
+    }
+
+    function Delete_Product_Onclick(index) {
+        $('#Product_Rows_' + index + '__Row_Type').val('@RAction.Delete');
+        $('#lrow-' + index).hide();
+    }
+
+    $(function () {
+
+        if ('@readView' == "True") {
+            Disable('divTile');
+
+            $('.text-disable input').attr("readonly", "true");
+            $('.text-disable button').attr("disabled", "disabled");
+            if ($('.text-disable a') != null && $('.text-disable a').length > 0) {
+                for (var i = 0; i < $('.text-disable a').length; i++) {
+                    var a = $('.text-disable a').get(i);
+                    if (a.className.indexOf("link-allow-click") < 0 && a.className.indexOf("chosen") < 0) {
+                        if (a.onclick != null) a.onclick = "return false;";
+                        if (a.href != null) a.href = "#";
+                    }
+                }
+            }
+
+            $('.text-disable select').attr("readonly", "true");
+            $('.text-disable select').prop('disabled', true);
+            $('.text-disable select').trigger("chosen:updated");
+
+            if ($('.text-disable select') != null && $('.text-disable select').length > 0) {
+                for (var i = 0; i < $('.text-disable select').length; i++) {
+                    var select = $('.text-disable select').get(i);
+                    if (select != null) {
+
+                        var hid = "<input type='hidden' name='" + select.name + "' value='" + select.value + "' />";
+                        $("#"+ select.id).append(hid);
+                    }
+                }
+            }
+
+            $('.drumcode select').removeAttr("readonly");
+            $('.drumcode select').removeAttr('disabled');
+            $('.drumcode select').trigger("chosen:updated");
+        }
+    });
+
+    function ReloadDrumCode(id) {
+        var pProductCode = $('#Product_Rows_' + id + '__Product_Code').val();
+       if (pProductCode != null && pProductCode != '') {
+            $.ajax({
+               type: 'POST',
+                url: 'ReloadDrumCode',
+               contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({ pProductCode: pProductCode }),
+               dataType: 'json',
+               success: function (data) {
+                  if (data != null) {
+                      var result = '';
+                      for (var i = 0, iL = data.length; i < iL; i++) {
+                          if (i == 0) {
+                              result += '<option value="' + data[i].Text + '" selected="selected">' + data[i].Text + '</option>';
+                          } else {
+                              result += '<option value="' + data[i].Text + '">' + data[i].Text + '</option>';
+                          }
+                      }
+                      $('#Product_Rows_' + id + '__Drum_Code').html(result);
+                      $('#Product_Rows_' + id + '__Drum_Code').trigger("chosen:updated");
+                  }
+               }
+            }).done(function () {
+
+            });
+         }
+      }
+
+</script>
+
+<div class="main">
+    @Html.AppPageHeader(Resource.Delivery + " " + Resource.Detail)
+    @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+    @using (Html.BeginForm("CMSDeliveryInfo", "CMS", FormMethod.Post, new { role = "form" }))
+    {
+        @Html.HiddenFor(m => m.Delivery_ID)
+        @Html.HiddenFor(m => m.operation)
+        @Html.HiddenFor(m => m.Modify)
+        @Html.HiddenFor(m => m.Completed)
+        <section class="tile" id="divTile">
+            <div class="tile-body ">
+                @Html.AppMultiControl(
+            new MvcHtmlString[] {
+               Html.AppLabelFor(m =>m.Delivery_Order_No),
+            }, 4
+         )
+                @Html.AppMultiControl(
+            new MvcHtmlString[] {
+               Html.AppTextboxFor(m =>m.Delivery_Order_No),
+            }, 4
+         )
+            </div>
+        </section>
+        <section class="tile " id="divProductDetail">
+            <div class="tile-header ">
+                <h1>List of Delivery Orders Scanned</h1>
+                <div class="controls">
+                    <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+                </div>
+            </div>
+            <div class="tile-body">
+                <div class="col-md-12 text-center">
+                    @Html.AppButton(Resource.Btn_Add, AppButtonType.button, AppColor.greensea, new { onclick = "Add_Product_Onclick();" })
+                </div>
+                <div class="col-md-12">
+                    <div class="validation-error">
+                        @Html.ValidationMessage("Product_Rows")
+                    </div>
+                </div>
+                <table class="table table-datatable table-custom dataTable" id="ProductDataTable">
+                    <thead>
+                        <tr>
+                            <th style="width:150px">@Resource.Product_Code</th>
+                            <th style="width:100px">@Resource.No_Of_Containers</th>
+                            <th>@Resource.Drum_Code</th>
+                            <th style="width:100px">@Resource.Date_Delivered</th>
+                            <th style="width:90px" class=" text-center">@Resource.Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Product_Rows != null)
+                        {
+                            var i = 0;
+                            foreach (var row in Model.Product_Rows)
+                            {
+                                <tr class="status-info" id="lrow-@i">
+                                    @{
+                                        if (!string.IsNullOrEmpty(row.Product_Code))
+                                        {
+                                            row.cDrum_Codelist = new ComboService().LstDrumCode(row.Product_Code, false, true);
+                                        }
+                                        Html.RenderPartial("_ProductRow", new CMSDeliveryDetail()
+                                        {
+                                            Index = i,
+                                            Product_Code = row.Product_Code,
+                                            No_Of_Containers = row.No_Of_Containers,
+                                            Drum_Code = row.Drum_Code,
+                                            Date_Delivered = row.Date_Delivered,
+                                            Row_Type = row.Row_Type,
+                                            cProduct_Codelist = Model.cProduct_Codelist,
+                                            cDrum_Codelist = row.cDrum_Codelist
+                                        });
+                                    }
+                                </tr>
+                                i++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="tile">
+            <div class="tile-body ">
+                @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { @disabled = readView, name = "Save_Mode", value = "Save" })
+                @Html.AppActionLink(Resource.Cancel, Url.Action("CMSDelivery", "CMS", new { }), AppColor.none)
+                @Html.AppButton(Resource.Manual_Scan, AppButtonType.submit, AppColor.orange, new { name = "Save_Mode", value = "ManualScan" })
+            </div>
+        </section>
+    }
+</div>

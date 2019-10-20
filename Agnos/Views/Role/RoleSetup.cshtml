@@ -1,0 +1,269 @@
+﻿@model Agnos.Models.RoleSetupViewModel
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+
+@{
+   ViewBag.Title = Resource.Role_Setup;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Role_Setup)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   <section class="tile">
+      <div class="tile-widget nopadding color green rounded-top-corners">
+         <ul class="nav nav-tabs tabdrop">
+            <li id="li-role"><a href="#role-tab" data-toggle="tab">@Resource.Role</a></li>
+            <li id="li-page"><a href="#page-tab" data-toggle="tab">@Resource.Page</a></li>
+            <li id="li-pagerole"><a href="#pagerole-tab" data-toggle="tab">@Resource.Page_Role</a></li>
+         </ul>
+      </div>
+      <div class="tile-body tab-content rounded-bottom-corners">
+         <div id="role-tab" class="tab-pane fade in ">
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.cPageList != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.Role_Name });
+
+                     foreach (var row in Model.cRoleList)
+                     {
+                        if (!string.IsNullOrEmpty(row.Value))
+                        {
+                           var grow = new GridRow();
+                           grow.Item.Add(new GridItem() { Value = row.Text });
+                           rows.Add(grow);
+                        }
+
+                     }
+                     @Html.AppGridData("rdatatable", headers, rows, null)
+                  }
+               </div>
+            </section>
+         </div>
+         <div id="page-tab" class="tab-pane fade in ">
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.cPageList != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.Page_Name });
+
+                     foreach (var row in Model.cPageList)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = row.Text });
+                        rows.Add(grow);
+
+                     }
+                     @Html.AppGridData("pdatatable", headers, rows, null)
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="pagerole-tab" class="tab-pane fade in ">
+            @using (Html.BeginForm("RoleSetup", "Role", FormMethod.Get, new { role = "form" }))
+            {
+               <section class="tile">
+                  <div class="tile-header">
+                     <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+                     <div class="controls">
+                        <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+                     </div>
+                  </div>
+                  <div class="tile-body ">
+                     @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.sRole_ID),
+                       }, 3
+                  )
+
+                     @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m =>m.sRole_ID,Model.cRoleList),
+                           @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green ,new{Name = "tabAction",Value="pagerole"})
+                       }, 3
+                  )
+
+                  </div>
+               </section>
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.PageRoleList != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.Role_Name });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Page_Name });
+                     headers.Add(new GridHeader() { Column_Name = Resource.View });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Modify });
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+                     foreach (var row in Model.PageRoleList)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = row.Role.Role_Name });
+                        grow.Item.Add(new GridItem() { Value = row.Page.Page_Name });
+
+                        if (row.View.HasValue && row.View.Value)
+                        {
+                           grow.Item.Add(new GridItem() { Value = "Yes" });
+                        }
+                        else
+                        {
+                           grow.Item.Add(new GridItem() { Value = "No" });
+                        }
+                        
+                        if (row.Modify.HasValue && row.Modify.Value)
+                        {
+                           grow.Item.Add(new GridItem() { Value = "Yes" });
+                        }
+                        else
+                        {
+                           grow.Item.Add(new GridItem() { Value = "No" });
+                        }
+
+                        
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                 Html.AppButtonModal(Resource.Edit, "modal-pagerole", AppColor.orange, new { onclick="EditPageRole('"+row.Page_Role_ID+"','"+row.Role_ID+ "','"+ row.Page_ID + "','"+ row.Modify + "','"+ row.View +   "','"+ row.Close +"');"}),
+                                 Html.AppActionLink(Resource.Delete, Url.Action("RoleSetup","Role", new {tabAction = "pagerole", operation = Operation.D,Page_Role_ID = row.Page_Role_ID }) , AppColor.danger,new{@disabled = readView})
+                              })
+                        });
+                        rows.Add(grow);
+                     }
+                     @Html.AppGridData("prdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-pagerole", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+                  }
+               </div>
+            </section>
+         </div>
+
+      </div>
+   </section>
+
+   @using (Html.BeginForm("RoleSetup", "Role", FormMethod.Post, new { role = "form" }))
+   {
+      @Html.HiddenFor(m => m.Page_Role_ID)
+      @Html.HiddenFor(m => m.operation)
+      <div class="modal fade" id="modal-pagerole" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyDetail">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Page_Role</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Role_ID)
+                  @Html.AppDropDownListFor(m => m.Role_ID, Model.cRoleList.Where(w => w.Value != null && w.Value != "").ToList())
+                  @Html.AppLabelFor(m => m.Page_ID)
+                  @Html.AppDropDownListFor(m => m.Page_ID, Model.cPageList)
+                  @Html.AppMultiControl(
+                     new MvcHtmlString[] {
+                        @Html.AppCheckBoxFor(m => m.View),
+                        @Html.AppCheckBoxFor(m => m.Modify),
+                  }, 4)
+
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "pagerole" })
+               </div>
+            </div>
+         </div>
+      </div>
+   }
+</div>
+
+
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyDetail');
+         $('#btn_Cancel').removeAttr('disabled');
+      }
+
+      var module = '@Model.tabAction';
+      if ('@string.IsNullOrEmpty(Model.tabAction)' == "True") {
+         module = "role";
+      }
+      var liID = "li-" + module;
+      var tabID = module + "-tab";
+      $("#" + liID).addClass("active");
+      $("#" + tabID).addClass("active");
+
+
+      if ('@ViewData.ModelState.IsValid'.toLowerCase() == "false") {
+         if ('@Model.tabAction' == "page") {
+            $('#modal-page').modal('show');
+         }
+         else if ('@Model.tabAction' == "pagerole") {
+            $('#modal-pagerole').modal('show');
+         }
+         else if ('@Model.tabAction' == "role") {
+            $('#modal-role').modal('show');
+         }
+      }
+
+   })
+
+   function EditPageRole(prID, rID, pID, modify, view, close) {
+      $('#operation').val('@Operation.U');
+      $('#Page_Role_ID').val(prID);
+      $('#Role_ID').val(rID);
+      $('#Page_ID').val(pID);
+
+      $('#Modify').get(0).checked = false;
+      if (modify == "True")
+         $('#Modify').get(0).checked = true;
+
+      $('#View').get(0).checked = false;
+      if (view == "True")
+         $('#View').get(0).checked = true;
+
+  
+      $('#Role_ID').trigger("chosen:updated");
+      $('#Page_ID').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+      $('#Page_Role_ID').val('');
+      $('#Role_ID').val('');
+      $('#Page_ID').val('');
+      $('#Modify').get(0).checked = true;
+      $('#View').get(0).checked = true;
+
+      if ($("#Role_ID option").length > 0)
+         $("#Role_ID").get(0).selectedIndex = 0
+
+      if ($("#Page_ID option").length > 0)
+         $("#Page_ID").get(0).selectedIndex = 0
+
+      $('#Role_ID').trigger("chosen:updated");
+      $('#Page_ID').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+</script>

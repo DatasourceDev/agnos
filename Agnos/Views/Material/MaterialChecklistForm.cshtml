@@ -1,0 +1,88 @@
+﻿@model Agnos.Models.MaterialChecklistViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@using AgnosModel.Service;
+@{
+   ViewBag.Title = Resource.Incoming_Raw_Material_Report;
+}
+
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table style="width: 100%;" class="header-form">
+         <tr>
+            <td width="20%"></td>
+            <td style="font-weight:700;" valign="top">
+               <h4><span style="text-align: center;text-decoration:underline">@Resource.Incoming_Raw_Material_Checklist</span></h4>
+            </td>
+            <td width="20%" style="text-align:right;font-size: 8px;" valign="top">
+               F075/05
+            </td>
+         </tr>
+      </table>
+      @foreach (var list in Model.lists)
+      {
+         <table cellpadding="5" cellspacing="1" style="width:100%;" border="0">
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="20%">@Resource.Product_Code :</td>
+               <td>
+                  @list.Product_Code
+               </td>
+               <td style="text-align:right;font-weight:700;" width="20%">@Resource.Product_Name :</td>
+               <td>
+                  @list.Product_Name
+               </td>
+            </tr>
+         </table>
+         <br />
+         <div id="divReportDetail" style="font-size: 8px;">
+            <table cellpadding="5" cellspacing="1" style="width:100%;" border="1">
+               <tr>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Received_Date</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Received_Qty</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Lot_No</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Unit</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.COA <br />(NG/OK)</td>
+                  <td style="font-weight:700;text-align:center" colspan="2">Packaging Condition</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Analysis <br />(NG/NA/OK)</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Expiry Date</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Record By</td>
+               </tr>
+               <tr>
+                  <td style="font-weight:700;text-align:center">Dent <br /> (Yes/No)</td>
+                  <td style="font-weight:700;text-align:center">Hole <br /> (Yes/No)</td>
+               </tr>
+               @foreach (var row in list.RawMaterialList)
+               {
+                  <tr>
+                     <td width="10%">@DateUtil.ToDisplayDate(row.Receiving_Date)</td>
+                     <td width="10%" style="text-align:right">
+                        @NumUtil.FormatCurrency(row.Total_Receiving)
+
+                     </td>
+                     <td width="10%">@row.Lot_No</td>
+                     <td width="8%">
+                        @if (row.Global_Lookup_Data != null)
+                        {
+                           @row.Global_Lookup_Data.Name
+                        }
+                     </td>
+                     <td width="8%">@row.COA</td>
+                     <td width="8%">@(row.Dented == true ? "Yes" : "No")</td>
+                     <td width="8%">@(row.Hole == true ? "Yes" : "No")</td>
+                     <td width="12%">@row.Analysis_Type</td>
+                  <td width="10%">@DateUtil.ToDisplayDate(row.Expiring_Date)</td>
+                  <td>
+                     @if (row.User_Profile != null)
+                     {
+                        @row.User_Profile.Name;
+                     }
+                  </td>
+               </tr>
+               }
+            </table>
+         </div>
+         <br />
+      }
+   </div>
+</div>

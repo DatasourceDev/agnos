@@ -1,0 +1,107 @@
+﻿@using AppFramework.Control;
+@using SBSResourceAPI;
+@using AgnosModel
+@model AgnosCMS.Models.ErrorViewModel
+@{
+   ViewBag.Title = "Error";
+   Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>@ViewBag.Title - Agnos</title>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery-2.1.4.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery-ui-1.11.4.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery.validate.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/modernizr-2.6.2.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/respond.min.js"></script>
+
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/font-awesome/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/app.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap/bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/animate/animate.min.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap-checkbox.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap/bootstrap-dropdown-multilevel.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/minimal.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/css/chosen.min.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/css/chosen-bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/dataTables.bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/ColVis.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/TableTools.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datepicker/css/bootstrap-datetimepicker.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/css/component.css" rel="stylesheet">
+
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/app-validate.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/app-control.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/bootstrap/bootstrap.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/bootstrap/bootstrap-dropdown-multilevel.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/mmenu/js/jquery.mmenu.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/sparkline/jquery.sparkline.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/nicescroll/jquery.nicescroll.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/animate-numbers/jquery.animateNumbers.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/chosen.jquery.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/blockui/jquery.blockUI.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/minimal.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/jquery.dataTables.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/ColReorderWithResize.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/colvis/dataTables.colVis.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/tabletools/ZeroClipboard.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/tabletools/dataTables.tableTools.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/dataTables.bootstrap.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/momentjs/moment-with-langs.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datepicker/bootstrap-datetimepicker.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/classie.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/modalEffects.js"></script>
+</head>
+
+<body class="bg-8">
+   <script type="text/javascript">
+      $(function () {
+         $('a').on("click", function (event) {
+            if ($(this).get(0).getAttribute('data-toggle') != null)
+               return;
+            if ($(this).get(0).getAttribute('data-modal') != null)
+               return;
+            if ($(this).hasClass("chosen-single") == true)
+               return;
+            if (event.isDefaultPrevented() == true)
+               return;
+            if ($(this).get(0).href == null || $(this).get(0).href == '')
+               return;
+            if ($(this).get(0).href.indexOf('#') != -1)
+               return;
+            if ($(this).get(0).getAttribute('target') == "_blank")
+               return;
+
+            ShowMask();
+         });
+      });
+   </script>
+   <div class="loading" align="center" style="z-index:9999">
+      <img src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/images/loader.gif">
+   </div>
+   <div class="mask"><div id="loader"></div></div>
+   <div id="wrap">
+      <div class="row">
+         <div class="login-block">
+            <section class="tile">
+               <div class="tile-body">
+                  <div class="row">
+                     <div class="col-md-12 text-center">
+                        <h4><i class="fa fa-user-times color-red"> @Model.Message</i></h4>
+                     </div>
+                  </div>
+               </div>
+            </section>
+         </div>
+      </div>
+   </div>
+   <script>
+      // this is important for IEs
+      var polyfilter_scriptpath = '@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/';
+   </script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/cssParser.js"></script>
+</body>
+</html>

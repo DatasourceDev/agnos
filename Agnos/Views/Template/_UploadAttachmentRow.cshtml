@@ -1,0 +1,53 @@
+﻿@model Agnos.Models.UploadAttachmentFile
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+@{
+   var aid = "";
+   var acceptType = "image/jpeg, image/jpg, image/png, image/gif, application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel,text/plain";
+   if (Model.Attachment_ID.HasValue)
+   {
+      aid = Model.Attachment_ID.Value.ToString();
+   }
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+@Html.Hidden("Attachment_ID" + Model.Index, Model.Attachment_ID)
+@if (Model.Index == 0)
+{
+   bool show = false;
+   if (Model.Attachment_ID != null)
+   {
+      show = true;
+   }
+   <div class="cIndex">
+      @Html.AppMultiControl(
+    new MvcHtmlString[] {
+        @Html.AppLabel("Upload Attachments"),
+        @Html.AppFileUpload("uploadfile" + Model.Index, new { name = "files-" + aid , @class="c",@disabled = readView ,@accept = acceptType}),
+        @Html.AppMultiControl( new MvcHtmlString[] {
+            @Html.AppActionLink("",Url.Action("LogsheetDisplayAttachment", "Template", new { pAttID = Model.Attachment_ID}),AppColor.none, new { id = "view" + Model.Index,target="_blank", icon = "fa fa-search"} ),
+            @Html.AppButton("" ,AppButtonType.button, AppColor.red,new{id = "btnuploadfile" + Model.Index, onclick="LogsheetDeleteAttachment('" + Model.Index+ "')", icon = "fa fa-minus", style = (show ? "display:displayed;" : "display:none;"),@disabled = readView }),
+            @Html.AppButton("" ,AppButtonType.button, AppColor.greensea,new{  id="btnAddnew", onclick="LogsheetAddAttachment()", icon = "fa fa-plus",@disabled = readView })
+            },2)
+    }, 4)
+   </div>
+}
+else
+{
+   <div id="@Model.Index" class="cIndex">
+      @Html.AppMultiControl(
+    new MvcHtmlString[] {
+        @Html.AppBlank(),
+        @Html.AppFileUpload("uploadfile" +  Model.Index, new { name =  "files-"+ aid, @class="c",@disabled = readView , @accept=acceptType}),
+        @Html.AppMultiControl( new MvcHtmlString[] {
+           @Html.AppActionLink("",Url.Action("LogsheetDisplayAttachment", "Template", new { pAttID = Model.Attachment_ID}),AppColor.none, new { id = "view" + Model.Index ,target="_blank", icon = "fa fa-search"} ),
+           @Html.AppButton("" ,AppButtonType.button, AppColor.red,new{onclick="LogsheetDeleteAttachment('"+ Model.Index+ "')", icon = "fa fa-minus",@disabled = readView })
+            },2)
+        }, 4)
+   </div>
+}

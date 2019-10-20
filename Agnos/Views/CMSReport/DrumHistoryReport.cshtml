@@ -1,0 +1,128 @@
+﻿@model Agnos.Models.CMSReportViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Drum_History_Report;
+}
+<script type="text/javascript">
+   function PrintForm() {
+      theForm.action = '@Url.Action("DrumHistoryReportPrint", "CMSReport")';
+      theForm.method = 'get';
+      theForm.target = '_blank'
+      theForm.submit();
+
+      theForm.action = '@Url.Action("DrumHistoryReport", "CMSReport")';
+      CloseProgress();
+   };
+
+   function SearchForm() {
+      theForm.action = '@Url.Action("DrumHistoryReport", "CMSReport")';
+      theForm.method = 'get';
+      theForm.target = '';
+      theForm.submit();
+   };
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Drum_History_Report)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   @using (Html.BeginForm("DrumHistoryReport", "CMSReport", FormMethod.Get, new { role = "form", id = "theForm" }))
+   {
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Product_Code),
+                        Html.AppLabelFor(m =>m.Date_From),
+                        Html.AppLabelFor(m =>m.Date_To),
+                        Html.AppLabelFor(m =>m.Sort_By),
+                    }, 3
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppDropDownListFor(m =>m.Product_Code,Model.cProductCodelist),
+                        Html.AppTextDateFor(m =>m.Date_From),
+                        Html.AppTextDateFor(m =>m.Date_To),
+                        Html.AppDropDownListFor(m =>m.Sort_By,Model.cSortlist),
+                    }, 3
+                )
+
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppMultiControl(
+                                new MvcHtmlString[] {
+                                       Html.AppButton(Resource.Search, AppButtonType.button, AppColor.green, new { onclick = "SearchForm();"}),
+                                       Html.AppButton(Resource.Print_Form, AppButtonType.button, AppColor.none, new { onclick = "PrintForm();"})
+                                }, 4
+                           )
+                    }, 3
+                )
+         </div>
+      </section>
+   }
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Drum_History_Report</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.chargelist != null)
+         {
+             var headers = new List<GridHeader>();
+             var rows = new List<GridRow>();
+
+             headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+             headers.Add(new GridHeader() { Column_Name = Resource.Drum_Code });
+             headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+             headers.Add(new GridHeader() { Column_Name = Resource.Delivery_Order_No });
+             headers.Add(new GridHeader() { Column_Name = Resource.No_Of_Charging, Data_Type = GridDataType.amount });
+             headers.Add(new GridHeader() { Column_Name = Resource.Weight, Data_Type = GridDataType.amount });
+             headers.Add(new GridHeader() { Column_Name = Resource.Station, Data_Type = GridDataType.numeric });
+             headers.Add(new GridHeader() { Column_Name = Resource.Date_Delivered });
+             headers.Add(new GridHeader() { Column_Name = Resource.Date_Charged });
+             headers.Add(new GridHeader() { Column_Name = Resource.User_Who_Charged });
+
+             var i = 0;
+             foreach (var row in Model.chargelist)
+             {
+                var c = 1;
+                if (Model.chargelistAll != null && !string.IsNullOrEmpty(row.Drum_Code))
+                {
+                   c = Model.chargelistAll.Where(w => w.Drum_Code == row.Drum_Code).Count();
+                }
+                 var grow = new GridRow();
+                 grow.Item.Add(new GridItem() { Value = (i + 1) });
+                 grow.Item.Add(new GridItem() { Value = row.Drum_Code });
+                 grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                 grow.Item.Add(new GridItem() { Value = row.Delivery_Order_No });
+                 grow.Item.Add(new GridItem() { Value = c });
+                 grow.Item.Add(new GridItem() { Value = row.Final_Weight });
+                 grow.Item.Add(new GridItem() { Value = row.Filling_Station_ID.HasValue && row.CMS_Filling_Station != null ? row.CMS_Filling_Station.Station_Code : "" });
+                 grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayFullDateTime(row.Date_Delivered) });
+                 grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayFullDateTime(row.Update_On) });
+                 grow.Item.Add(new GridItem() { Value = row.Profile_ID.HasValue && row.User_Profile != null ? row.User_Profile.Name : "" });
+                 rows.Add(grow);
+                 i++;
+             }
+            @Html.AppGridData("ldatatable", headers, rows, null);
+         }
+
+      </div>
+   </section>
+</div>

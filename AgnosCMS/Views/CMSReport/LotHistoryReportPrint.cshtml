@@ -1,0 +1,89 @@
+﻿@model AgnosCMS.Models.CMSReportViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+
+@{
+    ViewBag.Title = Resource.Lot_History_Report;
+    Layout = null;
+}
+<div class="main-content">
+    <div id="divReport" style="padding: 5px; font-size: 10px;">
+        <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+            <tr>
+                <td style="width:25%"></td>
+                <td style="width:50%;text-align:center;font-size: 16px;">AGNOS CHEMICALS PTE LTD </td>
+                <td style="width:25%;text-align:right"></td>
+            </tr>
+            <tr>
+                <td style="width:25%"></td>
+                <td style="width:50%;text-align:center">2 Tuas South Street 5 Tuas View Industrial Park, Singapore 637788 </td>
+                <td style="width:25%;text-align:right"></td>
+            </tr>
+            <tr>
+                <td style="width:25%"></td>
+                <td style="width:50%;text-align:center">Tel: (65) 6862 5428 Fax: (65) 6862 3418 </td>
+                <td style="width:25%;text-align:right"></td>
+            </tr>
+        </table>
+        <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+            <tr>
+                <td style="width:30%"><strong>@Resource.Lot_No:</strong> @Model.Lot_No </td>
+                <td style="width:40%"></td>
+                <td style="width:30%;text-align:right"><strong>@Resource.Date_Printed:</strong> @DateUtil.ToDisplayDate(Model.currentdate)</td>
+            </tr>
+            <tr>
+                <td><strong>@Resource.Date_Range:</strong> @Model.Date_From - @Model.Date_To</td>
+                <td></td>
+                <td style="text-align:right"><strong>@Resource.Sort_By:</strong> @Sort_Type.GetSortType(Model.Sort_By) </td>
+            </tr>
+            <tr>
+                <td> </td>
+                <td style="text-align:center"><h3 style="text-decoration:underline"><strong>@Resource.Lot_History_Report.ToUpper()</strong></h3></td>
+                <td> </td>
+            </tr>
+        </table>
+        <br />
+        <table cellpadding="2" cellspacing="2" style="width:100%;" border="0">
+            <tr>
+                <td valign="top"><strong>@Resource.Lot_No</strong> </td>
+                <td valign="top"><strong>@Resource.Drum_Code</strong> </td>
+                <td valign="top"><strong>@Resource.Delivery_Order_No</strong> </td>
+                <td valign="top" style="text-align:right"><strong>@Resource.Weight</strong> </td>
+                <td valign="top" style="text-align:center"><strong>@Resource.Station </strong> </td>
+                <td valign="top"><strong>@Resource.Date_Charged</strong> </td>
+                <td valign="top"><strong>@Resource.Date_Delivered</strong> </td>
+                <td valign="top"><strong>@Resource.User_Who_Charged</strong> </td>
+            </tr>
+            @if (Model.chargelist != null)
+            {
+                var even = false;
+                var bgcolor = "#eee";
+                foreach (var charge in Model.chargelist)
+                {
+                    <tr>
+                        <td valign="top" bgcolor="@bgcolor">@charge.Lot_No </td>
+                        <td valign="top" bgcolor="@bgcolor">@charge.Drum_Code </td>
+                        <td valign="top" bgcolor="@bgcolor">@charge.Delivery_Order_No </td>
+                        <td valign="top" bgcolor="@bgcolor" style="text-align:right">@NumUtil.FormatCurrency(charge.Final_Weight) </td>
+                        <td valign="top" bgcolor="@bgcolor" style="text-align:center">@(charge.Filling_Station_ID.HasValue && charge.CMS_Filling_Station != null ? charge.CMS_Filling_Station.Station_Code : "")</td>
+                        <td valign="top" bgcolor="@bgcolor"> @DateUtil.ToDisplayFullDateTime(charge.Update_On)</td>
+                        <td valign="top" bgcolor="@bgcolor">@DateUtil.ToDisplayFullDateTime(charge.Date_Delivered)</td>
+                        <td valign="top" bgcolor="@bgcolor" style="text-align:center">@(charge.Profile_ID.HasValue && charge.User_Profile != null ? charge.User_Profile.Name : "") </td>
+                    </tr>
+
+                    if (even)
+                    {
+                        bgcolor = "#eee";
+                    }
+                    else
+                    {
+                        bgcolor = "#fff";
+                    }
+                    even = !even;
+                }
+            }
+
+        </table>
+    </div>
+</div>

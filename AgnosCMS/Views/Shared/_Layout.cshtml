@@ -1,0 +1,245 @@
+﻿@using SBSResourceAPI;
+@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity.EntityFramework;
+@using AgnosModel;
+@using AgnosModel.Service;
+@using AgnosModel.Models;
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>@ViewBag.Title - Agnos</title>
+   <script src="~/cms/commonLib.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery-2.1.4.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery-ui-1.11.4.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/jquery.validate.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/modernizr-2.6.2.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/respond.min.js"></script>
+
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/font-awesome/css/font-awesome.min.css" media="all" rel="stylesheet" type="text/css">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/app.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap/bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/animate/animate.min.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap-checkbox.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/vendor/bootstrap/bootstrap-dropdown-multilevel.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/css/minimal.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/css/chosen.min.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/css/chosen-bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/dataTables.bootstrap.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/ColVis.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/css/TableTools.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datepicker/css/bootstrap-datetimepicker.css" rel="stylesheet">
+   <link href="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/css/component.css" rel="stylesheet">
+
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/app-validate.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/Scripts/app-control.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/bootstrap/bootstrap.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/bootstrap/bootstrap-dropdown-multilevel.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/mmenu/js/jquery.mmenu.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/sparkline/jquery.sparkline.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/nicescroll/jquery.nicescroll.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/animate-numbers/jquery.animateNumbers.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/chosen/chosen.jquery.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/blockui/jquery.blockUI.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/minimal.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/jquery.dataTables.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/ColReorderWithResize.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/colvis/dataTables.colVis.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/tabletools/ZeroClipboard.js"></script>
+
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/tabletools/dataTables.tableTools.min.js"></script>
+
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datatables/dataTables.bootstrap.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/momentjs/moment-with-langs.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/datepicker/bootstrap-datetimepicker.min.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/classie.js"></script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/modalEffects.js"></script>
+
+
+
+</head>
+@{
+   var pRoles = new List<string>();
+   if (User.Identity.IsAuthenticated)
+   {
+      var uService = new UserService();
+      pRoles = uService.ValidatePageRole(User.Identity.GetUserId());
+   }
+}
+
+<body class="bg-8">
+   <script type="text/javascript">
+      $(function () {
+
+         $('a').on("click", function (event) {
+            if ($(this).get(0).getAttribute('data-toggle') != null)
+               return;
+            if ($(this).get(0).getAttribute('data-modal') != null)
+               return;
+            if ($(this).hasClass("chosen-single") == true)
+               return;
+            if (event.isDefaultPrevented() == true)
+               return;
+            if ($(this).get(0).href == null || $(this).get(0).href == '')
+               return;
+            if ($(this).get(0).href.indexOf('#') != -1)
+               return;
+            if ($(this).get(0).getAttribute('target') == "_blank")
+               return;
+
+            ShowMask();
+         });
+      });
+   </script>
+   <div id="wrap">
+      <div class="row">
+
+         @if (User.Identity.IsAuthenticated)
+         {
+            <div class="navbar navbar-default navbar-fixed-top navbar-black mm-fixed-top collapsed" role="navigation" id="navbar">
+               <div class="navbar-header col-md-2">
+                  <a href="@Url.Action("CMSSetup", "CMS")" class="navbar-brand">
+                     Agnos      <span style="font-size:11px"> - @Resource.Station @AppSetting.Station_Code</span>
+                  </a>
+                  <div class="sidebar-collapse">
+                     <a href="#">
+                        <i class="fa fa-bars"></i>
+                     </a>
+                  </div>
+               </div>
+               <div class="navbar-collapse">
+
+                  <!-- Page refresh -->
+                  <ul class="nav navbar-nav refresh">
+                     <li class="divided">
+                        <a href="#" class="page-refresh"><i class="fa fa-refresh"></i></a>
+                     </li>
+                  </ul>
+
+                  <ul class="nav navbar-nav quick-actions">
+                     <li class="dropdown divided user" id="current-user">
+                        <div class="profile-photo">
+                           <img src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/images/imgprofile.jpg" style="max-height:45px">
+                        </div>
+                        <a class="dropdown-toggle options" data-toggle="dropdown" href="#">
+                           @User.Identity.GetUserName()
+                        </a>
+                        @*<ul class="dropdown-menu arrow settings">
+                              <li class="divider"></li>
+                              <li>
+                                 <a href="@Url.Action("Logout", "Account")"><i class="fa fa-power-off"></i> @Resource.Logout</a>
+                              </li>
+                           </ul>*@
+                     </li>
+                     <li class="">
+                        <a href="@Url.Action("Logout", "Account")" title="@Resource.Logout"><i class="fa fa-power-off" style="color:red"></i></a>
+                     </li>
+                     <li>
+                        <a></a>
+                     </li>
+                  </ul>
+                  <ul class="nav navbar-nav side-nav cyan" id="sidebar">
+
+                     <li class="collapsed-content">
+                        <ul>
+                           <li class="search"><!-- Collapsed search pasting here at 768px --></li>
+                        </ul>
+                     </li>
+
+                     <li class="navigation" id="navigation">
+                        <a href="#" class="sidebar-toggle" data-toggle="#navigation">Navigation (V. @AppSetting.App_Version) <i class="fa fa-angle-up"></i></a>
+                        <ul class="menu">
+                           @if (pRoles.Contains(Page_Code.P0009))
+                           {
+                              <li>
+                                 <a href="@Url.Action("CMSSetup", "CMS")">
+                                    <i class="fa fa-chevron-circle-right "></i>
+                                    @Resource.CMS_Setup
+                                 </a>
+                              </li>
+                           }
+                           @if (pRoles.Contains(Page_Code.P0012))
+                           {
+                              <li>
+                                 <a href="@Url.Action("CMSPurge", "CMS")">
+                                    <i class="fa fa-chevron-circle-right "></i>
+                                    @Resource.CMS_Purge
+                                 </a>
+                              </li>
+                           }
+                           @if (pRoles.Contains(Page_Code.P0013))
+                           {
+                              <li>
+                                 <a href="@Url.Action("CMSCharge", "CMS")">
+                                    <i class="fa fa-chevron-circle-right "></i>
+                                    @Resource.CMS_Charge
+                                 </a>
+                              </li>
+                           }
+                           @if (pRoles.Contains(Page_Code.P0015))
+                           {
+                              <li>
+                                 <a href="@Url.Action("CMSDelivery", "CMS")">
+                                    <i class="fa fa-chevron-circle-right "></i>
+                                    @Resource.CMS_Delivery
+                                 </a>
+                              </li>
+                           }
+
+                           @if (pRoles.Contains(Page_Code.P0016))
+                           {
+                              <li class="dropdown">
+                                 <a class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-chevron-circle-right "></i>
+                                    @Resource.Reports
+                                    <b class="fa fa-plus dropdown-plus color-white"></b>
+                                 </a>
+                                 <ul class="dropdown-menu">
+                                    @if (pRoles.Contains(Page_Code.P0016))
+                                    {
+                                       <li>
+                                          <a href="@Url.Action("InventoryReport", "CMSReport")">
+                                             <i class="fa fa-chevron-circle-right "></i>
+                                             @Resource.Inventory_Report
+                                          </a>
+                                       </li>
+                                       <li>
+                                          <a href="@Url.Action("DrumHistoryReport", "CMSReport")">
+                                             <i class="fa fa-chevron-circle-right "></i>
+                                             @Resource.Drum_History_Report
+                                          </a>
+                                       </li>
+                                       <li>
+                                          <a href="@Url.Action("LotHistoryReport", "CMSReport")">
+                                             <i class="fa fa-chevron-circle-right "></i>
+                                             @Resource.Lot_History_Report
+                                          </a>
+                                       </li>
+                                    }
+                                 </ul>
+                              </li>
+                           }
+                        </ul>
+                     </li>
+                  </ul>
+                  <!-- Sidebar end -->
+               </div>
+               <!--/.nav-collapse -->
+            </div>
+         }
+         <div id="content" class="col-md-12">
+            @RenderBody()
+         </div>
+      </div>
+   </div>
+
+   <script>
+      // this is important for IEs
+      var polyfilter_scriptpath = '@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/';
+   </script>
+   <script src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/js/vendor/modals/cssParser.js"></script>
+
+   @RenderSection("scripts", required: false)
+</body>
+</html>

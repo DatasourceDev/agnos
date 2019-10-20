@@ -1,0 +1,47 @@
+﻿@model Agnos.Models.MaterialFileAttachList
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+
+<div>
+   <div class="modal fade" id="modal-attachment" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title"><strong>@Resource.Attachment_File</strong></h4>
+            </div>
+            <div class="modal-body">
+
+               @if (Model.Attachmentlist != null)
+               {
+                  <div class="modal-body">
+                     <table cellpadding="8" cellspacing="8" style="width: 100%;">
+                        <tr>
+                           <th style="width:200px;padding:1px;">
+                              @Resource.Name
+                           </th>
+                           <th style="width:40px;padding:1px;">
+                              @Resource.View
+                           </th>
+                        </tr>
+                     </table>
+                     <table cellpadding="8" cellspacing="8" style="width: 100%;">
+                        @foreach (var rowd in Model.Attachmentlist)
+                        {
+                           <tr style="padding:4px;">
+                              <td style="width:200px;padding:1px;">@rowd.Attachment_File_Name</td>
+                              <td style="width:40px;padding:1px;">@Html.AppActionLink("", Url.Action("MaterialDisplayFile", "Material", new { pAttID = rowd.Attachment_ID }), AppColor.none, new { target = "_blank", icon = "fa fa-folder-open" })</td>
+                           </tr>
+                        }
+                     </table>
+                  </div>
+               }
+            </div>
+            <div class="modal-footer">
+               @Html.AppButton(Resource.Close, AppButtonType.button, AppColor.none, new { @data_dismiss = "modal", @aria_hidden = "true" })
+            </div>
+         </div>
+      </div>
+   </div>
+</div>

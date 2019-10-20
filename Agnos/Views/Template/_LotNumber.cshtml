@@ -1,0 +1,104 @@
+﻿@model Agnos.Models.LogsheetInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using AppFramework.Util;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = @Resource.Lot_No;
+}
+
+<script type="text/javascript">
+
+   function lotNumberRetrive(lotNumberID) {
+      var lotno = $('#Lot_No').val();
+      var pcode = $('#Product_Code').val();
+      $.ajax({
+         type: 'Get',
+         url: 'GetLotNumber',
+         contentType: 'application/json; charset=utf-8',
+         data: { pLotNo: lotno, pLotNumberID: lotNumberID, pProductCode: pcode },
+         dataType: 'json',
+         success: function (data) {
+            if (data != null && data.length > 0) {
+               if (data.length > 1) {
+                  /* POP up customer dialog*/
+                  lotNumberShowDlg(data);
+               }
+               else if (data.length == 1) {
+                  lotNumberClear();
+                  var lotNumber = data[0];
+                  $("#Lot_No").val(lotNumber.Lot_No);
+                  $("#Lot_Number_ID").val(lotNumber.Lot_Number_ID);
+               }
+            } else {
+
+            }
+         }
+      });
+   }
+   function lotNumberClear(doClearLotNo) {
+      if (doClearLotNo == true)
+         $("#Lot_No").val('');
+
+      $("#Lot_Number_ID").val('');
+
+   }
+
+   function lotNumberShowDlg(data) {
+      $("#btnOpenLotNumber").get(0).click();
+      $("#lotNumberDataTable").remove();
+      var str = '';
+      str += '<table class="table table-datatable table-custom" id="lotNumberDataTable">';
+      str += '<thead>';
+      str += '<tr>';
+      str += '<th class="sort-alpha" style="width:40%">@Resource.Lot_No</th>';
+      str += '<th class="sort-alpha"  style="width:25%">@Resource.Date</th>';
+      str += '<th class="no-sort"  style="width:10%">@Resource.Action</th>';
+      str += '</tr>';
+      str += '</thead>';
+      str += '<tbody >';
+
+      for (var i = 0; i < data.length; i++) {
+         var lotNumber = data[i];
+         str += '<tr>';
+         str += '<td>' + lotNumber.Lot_No + '</td>';
+         str += '<td>' + lotNumber.Lot_Number_Date + '</td>';
+         str += '<td>' + ' <button type="button" class="btn btn-info" onclick="lotNumberChoose(' + lotNumber.Lot_Number_ID + ');">Choose</button>' + '</td>';
+         str += '</tr>';
+      }
+      str += '</tbody>';
+      str += '</table>';
+      str += '<script type="text/javascript">';
+      str += '$(function () {';
+      str += 'InitDatatable("#lotNumberDataTable", null, null, 0, "asc");';
+      str += '})';
+
+      $('#tblotNumber').html(str);
+   }
+   function lotNumberChoose(lotNumberID) {
+      lotNumberRetrive(lotNumberID);
+      $('#modal-lotnumber').modal('hide');
+   }
+</script>
+
+<a id="btnOpenLotNumber" href="#modal-lotnumber" role="button" data-toggle="modal" style="display:none;"></a>
+<div class="modal fade" id="modal-lotnumber" tabindex="-1" role="dialog" aria-labelledby="modalConfirmLotNumber" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h3 class="modal-title" id="modalConfirmLotNumber"><strong>@Resource.Lot_Number_Generation</strong></h3>
+         </div>
+         <div class="modal-body">
+            <div class="table-responsive" id="tblotNumber">
+
+
+            </div>
+         </div>
+
+      </div>
+   </div>
+   <div class="md-overlay"></div>
+</div>

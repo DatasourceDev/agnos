@@ -1,0 +1,140 @@
+﻿@model Agnos.Models.LogsheetViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Logsheet;
+   var read = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      read = true;
+   }
+}
+<script type="text/javascript">
+
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("LogsheetInfo", "Template", new { operation = Operation.D })' + '&Logsheet_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+
+   function loadproductlist() {
+      var id = 'Product_Code';
+      $.ajax({
+         type: 'POST',
+         url: '@Url.Action("ReloadProductList", "Template")' ,
+         contentType: 'application/json; charset=utf-8',        
+         dataType: 'json',
+         success: function (data) {
+            var result = '';
+            for (var i = 0, iL = data.length; i < iL; i++) {
+               result += '<option value="' + data[i].Value + '">' + data[i].Text + '</option>';
+            }
+            $('#' + id).html(result);
+            $('#' + id).trigger("chosen:updated");
+            CloseMask();
+         }
+      });
+   }
+
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Logsheet)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   @using (Html.BeginForm("Logsheet", "Template", FormMethod.Get, new { role = "form" }))
+   {
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Product_Code),
+                    }, 6
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                          Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist),
+                          Html.AppActionLink(" Download Product from Exchquer","#",AppColor.none, new { icon = "fa fa-download fa-flip-horizontal", onclick="loadproductlist()"}),                        
+                    }, 6
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                       Html.AppLabelFor(m => m.Template_Code),
+                       Html.AppLabelFor(m => m.Lot_No),
+                       Html.AppLabelFor(m => m.Logsheet_Status)
+                    }, 3
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppTextboxFor(m =>m.Template_Code),
+                        Html.AppTextboxFor(m =>m.Lot_No),
+                        Html.AppDropDownListFor(m =>m.Logsheet_Status, Model.cLogsheetStatuslist),
+                        Html.AppButton(Resource.Search, AppButtonType.submit, AppColor.green)
+                    }, 3
+                )
+         </div>
+      </section>
+   }
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Logsheet</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.LogsheetList != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+
+            headers.Add(new GridHeader() { Column_Name = Resource.Product });
+            headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Template_Code });
+            headers.Add(new GridHeader() { Column_Name = Resource.Date });
+            headers.Add(new GridHeader() { Column_Name = Resource.Status });
+            headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "350px" });
+
+            foreach (var row in Model.LogsheetList)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = row.Product_Code + " " + row.Product_Name });
+               grow.Item.Add(new GridItem() { Value = row.Lot_No });
+               grow.Item.Add(new GridItem() { Value = row.Template_Logsheet != null ? row.Template_Logsheet.Template_Code : "" });
+               grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Create_On) });
+               grow.Item.Add(new GridItem() { Value = row.Lotgsheet_Status });
+               grow.Item.Add(new GridItem()
+               {
+                  Value = Html.AppMultiButton(
+                      new MvcHtmlString[] {
+                                Html.AppActionLink(Resource.Detail, Url.Action("LogsheetInfo","Template", new { operation = Operation.U,Logsheet_ID = row.Logsheet_ID }) , AppColor.orange),
+                                Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Logsheet_ID+"');", @disabled = read }),
+                                Html.AppActionLink(Resource.Print_Form, Url.Action("LogsheetPrint", "Template", new {  operation = Operation.U,Logsheet_ID = row.Logsheet_ID}), AppColor.none,new {Target = ActionTarget._blank}),
+                                Html.AppActionLink("Product Form", Url.Action("LogsheetProductStatusForm", "Template", new { pLogsheetID = row.Logsheet_ID}), AppColor.none,new {Target = ActionTarget._blank })
+                            }),
+               });
+               rows.Add(grow);
+            }
+              @Html.AppGridData("ldatatable", headers, rows)
+            //@Html.AppGridData("ldatatable", headers, rows, Html.AppGridAddButton(Resource.Btn_Add, Url.Action("LogsheetInfo", "Template", new { operation = Operation.C }), AppColor.greensea, new { @disabled = read }))
+         }
+
+      </div>
+   </section>
+</div>

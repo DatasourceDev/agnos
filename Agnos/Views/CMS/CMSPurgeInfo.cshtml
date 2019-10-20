@@ -1,0 +1,77 @@
+﻿@model Agnos.Models.CMSPurgeInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Purging_Process;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+
+   if (Model.Completed == true) { readView = true; }
+}
+
+<script type="text/javascript">
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("CMSPurge", "CMS", new { operation = Operation.D })' + '&Purge_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+
+   $(document).ready(function () {
+      $('#Filling_Station_ID_Dispaly').change(function () {
+         $('#Filling_Station_ID').val($(this).children('option:selected').val());
+      });
+   });
+</script>
+
+@using (Html.BeginForm("CMSPurgeInfo", "CMS", FormMethod.Post, new { id = "CMSForm", role = "form", enctype = "multipart/form-data", onkeydown = "return event.keyCode!=13" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Purging_Process)
+      @Html.HiddenFor(m => m.Purge_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Filling_Station_ID)
+
+
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile" id="divpurge">
+         @Html.AppSectionHeader(Resource.Purging_Process)
+         <div class="tile-body ">
+            @Html.AppLabelFor(m => m.Drum_Code, 4)
+            @Html.AppTextboxFor(m => m.Drum_Code, 4, new { @readonly = (Model.operation == Operation.U ? true : false) })
+
+            @Html.AppLabelFor(m => m.Filling_Station_ID, 4)
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             @Html.AppDropDownListFor(m => m.Filling_Station_ID_Dispaly, Model.cStationlist),
+                       }, 4
+                  )
+
+            @Html.AppLabelFor(m => m.Initial_Weight, 4)
+            @Html.AppTextboxDecimalFor(m => m.Initial_Weight, 4)
+
+            @Html.AppLabelFor(m => m.Final_Weight, 4)
+            @Html.AppTextboxDecimalFor(m => m.Final_Weight, 4)
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body ">
+            @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { @disabled = readView, })
+            @Html.AppActionLink(Resource.Cancel, Url.Action("CMSPurge", "CMS", new { }), AppColor.none)
+         </div>
+      </section>
+   </div>
+}
+
+

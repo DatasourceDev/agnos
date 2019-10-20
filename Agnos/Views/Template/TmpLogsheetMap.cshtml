@@ -1,0 +1,97 @@
+﻿@model Agnos.Models.Tmp_Log_Map_Row
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Text;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using Agnos.Common;
+@{
+
+   var i = Model.i;
+   var h = Model.h;
+   var m = Model.m;
+}
+
+<div id="divMap-@i-@h-@m" class="map-@i-@h">
+   <section class="tile">
+      <div class="tile-body">
+         <script type="text/javascript">
+               $(function () {
+                  $(".chosen-select").chosen({ disable_search_threshold: 10 });
+               });
+         </script>
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Tmp_Log_Header_ID"), Model.Tmp_Log_Header_ID)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Tmp_Log_Map_ID"), Model.Tmp_Log_Map_ID)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Option_Data_Type"), Model.Option_Data_Type)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Option_Data_Type"), Model.Option_Field_From)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Lot_No"), Model.Lot_No)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "Field_ID"), Model.Field_ID)
+
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "i"), Model.i)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "h"), Model.h)
+         @Html.Hidden(NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "m"), Model.m)
+
+         <input type="hidden" name="@NameUtil.GenTmpLogsheet.GenMapName(i, h, m, "RowAction")" id="@NameUtil.GenTmpLogsheet.GenMapID(i, h, m, "RowAction")" value="@Model.RowAction" />
+         @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                     Html.AppRadioButton(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Selected"), Logsheet_Control_Type.Text , new {
+                        id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Selected1"),
+                        text = Resource.Text,
+                        @checked = (Model.Option_Selected == Logsheet_Control_Type.Text ? true: false )}),
+                        Html.AppTextbox(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Text"),Model.Option_Text,new{
+                              placeholder=Resource.Text,
+                              id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Text"),
+                        })
+                  }, 6
+               )
+
+         @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                     Html.AppRadioButton(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Selected"), Logsheet_Control_Type.Leave_As_Textbox , new {
+                        id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Selected3") ,
+                        text=Resource.Leave_As_Textbox                           ,
+                        @checked = (Model.Option_Selected == Logsheet_Control_Type.Leave_As_Textbox ? true: false )})
+                  }, 12
+               )
+         @Html.AppMultiControl(
+                  new MvcHtmlString[]{
+                     Html.AppRadioButton(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Selected"), Logsheet_Control_Type.DropdownList , new {
+                        id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Selected4") ,
+                        text=Resource.DropDownList,
+                        @checked = (Model.Option_Selected == Logsheet_Control_Type.DropdownList ? true: false )}),
+                        @Html.AppDropDownList(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Dropdown_Type"), Model.cDropdownTypeList, Model.Option_Dropdown_Type),
+                  }, 6)
+         @Html.AppMultiControl(
+                  new MvcHtmlString[]{
+                     Html.AppRadioButton(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Selected"), Logsheet_Control_Type.Range , new {
+                        id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Selected5") ,
+                        text=Resource.Range_From,
+                        @checked = (Model.Option_Selected == Logsheet_Control_Type.Range ? true: false )}),
+                        Html.AppMultiControl(new MvcHtmlString[]{
+                              Html.AppTextboxDecimal(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Range_From"),Model.Option_Range_From,new{
+                                 placeholder=Resource.From,
+                                 id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Range_From")
+                              }),
+                              Html.AppTextboxDecimal(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Range_To"),Model.Option_Range_To,new{
+                                 placeholder=Resource.To ,
+                                 id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Range_To"),
+                              })
+                        },6)
+                  }, 6)
+
+         @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                     Html.AppRadioButton(NameUtil.GenTmpLogsheet.GenMapName(i,h,m,"Option_Selected"), Logsheet_Control_Type.Date , new {
+                        id = NameUtil.GenTmpLogsheet.GenMapID(i,h,m,"Option_Selected6") ,
+                        text=Resource.Date                           ,
+                        @checked = (Model.Option_Selected == Logsheet_Control_Type.Date ? true: false )})
+                  }, 12
+        )
+
+         
+      </div>
+
+   </section>
+</div>

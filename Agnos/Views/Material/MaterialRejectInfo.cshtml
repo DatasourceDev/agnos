@@ -1,0 +1,502 @@
+﻿@model Agnos.Models.MaterialRejectInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+    ViewBag.Title = Resource.Reject_Matrials_Report;
+    var readView = false;
+    if (Model.Modify == null || Model.Modify.Value == false)
+    {
+        readView = true;
+    }
+}
+
+<script type="text/javascript">
+    var ckR_F = '@Model.Reject_From';
+    $(function () {
+
+        //Function Modify
+        if ('@readView' == "True") {
+            Disable('divReject');
+        }
+
+        if (ckR_F == '') {
+            ckR_F = '@Reject_From_Type.Customer';
+            $("#Reject_Status").prop("disabled", "disabled");
+        }
+
+        //if ($("#Product_Code option").length > 0)
+        //   $("#Product_Code").get(0).selectedIndex = 0;
+
+        $('#Product_Code').trigger("chosen:updated");
+
+        if ('@Model.operation' == '@Operation.C') {
+
+            if ('@Model.Product_Code' != null && '@Model.Product_Code' != '') {
+                if ('@Model.Lot_No' == null || '@Model.Lot_No' == '')
+                    $('#modal-product').modal('show');
+                else if ('@Model.Quantity' == null || '@Model.Quantity' == '')
+                    $('#modal-product').modal('show');
+            }
+        }
+
+        //-------------------Reject From----------------------//
+        if (ckR_F == '@Reject_From_Type.Customer') {
+            $("#Reject_Customer_Name").prop('readonly', false);
+            $("#Reject_Supplier_Name").prop('readonly', true);
+            $("#Reject_Inhouse_Location").prop('readonly', true);
+        }
+        else if (ckR_F == '@Reject_From_Type.Supplier') {
+            $("#Reject_Supplier_Name").prop('readonly', false);
+            $("#Reject_Customer_Name").prop('readonly', true);
+            $("#Reject_Inhouse_Location").prop('readonly', true);
+        }
+        else if (ckR_F == '@Reject_From_Type.Inhouse') {
+            $("#Reject_Inhouse_Location").prop('readonly', false);
+            $("#Reject_Supplier_Name").prop('readonly', true);
+            $("#Reject_Customer_Name").prop('readonly', true);
+        }
+
+        $('input[type=radio][name=Reject_From]').change(function () {
+            if (this.value == '@Reject_From_Type.Customer') {
+                $("#Reject_Customer_Name").prop('readonly', false);
+                $("#Reject_Supplier_Name").prop('readonly', true);
+                $("#Reject_Inhouse_Location").prop('readonly', true);
+            }
+            else if (this.value == '@Reject_From_Type.Supplier') {
+                $("#Reject_Supplier_Name").prop('readonly', false);
+                $("#Reject_Customer_Name").prop('readonly', true);
+                $("#Reject_Inhouse_Location").prop('readonly', true);
+            }
+            else if (this.value == '@Reject_From_Type.Inhouse') {
+                $("#Reject_Inhouse_Location").prop('readonly', false);
+                $("#Reject_Supplier_Name").prop('readonly', true);
+                $("#Reject_Customer_Name").prop('readonly', true);
+            }
+        });
+        //---------------End Reject From----------------------//
+
+
+
+        //-------------------Signed by MRT---------------------//
+        if ('@Model.PD'.toLowerCase() == "false" || '@Model.PD' == '' || '@Model.Role_Name' != '@Role_Name.PD') {
+            $("input[type=text]#PD_Date").prop('disabled', true);
+        }
+        else {
+            $("input[type=text]#PD_Date").prop('disabled', false);
+        }
+
+        if ('@Model.QA'.toLowerCase() == "false" || '@Model.QA' == '' || '@Model.Role_Name' != '@Role_Name.QA') {
+            $("input[type=text]#QA_Date").prop('disabled', true);
+        }
+        else {
+            $("input[type=text]#QA_Date").prop('disabled', false);
+        }
+
+
+        if ('@Model.Logistics'.toLowerCase() == "false" || '@Model.Logistics' == '' || '@Model.Role_Name' != '@Role_Name.Logistics') {
+            $("input[type=text]#Logistics_Date").prop('disabled', true);
+        }
+        else {
+            $("input[type=text]#Logistics_Date").prop('disabled', false);
+        }
+
+        if ('@Model.Sales'.toLowerCase() == "false" || '@Model.Sales' == '' || ('@Model.Role_Name' != '@Role_Name.Sales' & '@Model.Role_Name' != '@Role_Name.GM')) {
+            $("input[type=text]#Sales_Date").prop('disabled', true);
+        }
+        else {
+            $("input[type=text]#Sales_Date").prop('disabled', false);
+        }
+
+        if ('@Model.Role_Name' == '@Role_Name.GM') {
+            if ('@Model.PD'.toLowerCase() == 'true' && '@Model.QA'.toLowerCase() == 'true' && '@Model.Logistics'.toLowerCase() == 'true' && '@Model.Sales'.toLowerCase() == 'true')
+                $("input[type=text]#GM_Approval_Date").prop('disabled', false);
+            else
+                $("input[type=text]#GM_Approval_Date").prop('disabled', true);
+        }
+        else {
+            $("input[type=text]#GM_Approval_Date").prop('disabled', true);
+        }
+
+        $("input[type=text]#PD_Date").trigger("chosen:updated");
+        $("input[type=text]#QA_Date").trigger("chosen:updated");
+        $("input[type=text]#Logistics_Date").trigger("chosen:updated");
+        $("input[type=text]#Logistics_Date").trigger("chosen:updated");
+
+        $('#PD').change(function () {
+            if ($(this).is(":checked")) {
+                $("input[type=text]#PD_Date").prop('disabled', false);
+            }
+            else {
+                $("input[type=text]#PD_Date").prop('disabled', true);
+            }
+        });
+
+        $('#QA').change(function () {
+            if ($(this).is(":checked")) {
+                $("input[type=text]#QA_Date").prop('disabled', false);
+            }
+            else {
+                $("input[type=text]#QA_Date").prop('disabled', true);
+            }
+        });
+
+
+        $('#Logistics').change(function () {
+            if ($(this).is(":checked")) {
+                $("input[type=text]#Logistics_Date").prop('disabled', false);
+            }
+            else {
+                $("input[type=text]#Logistics_Date").prop('disabled', true);
+            }
+        });
+
+        $('#Sales').change(function () {
+            if ($(this).is(":checked")) {
+                $("input[type=text]#Sales_Date").prop('disabled', false);
+            }
+            else {
+                $("input[type=text]#Sales_Date").prop('disabled', true);
+            }
+        });
+        //---------------End Signed by MRT----------------------//
+
+        //---------------End Disposition----------------------//
+
+        if ('@Model.Disposition_Others' == "False" || '@Model.Disposition_Others' == "false" || '@Model.Disposition_Others' == '') {
+            $("#Disposition_Others_Description").prop('disabled', true);
+        }
+        else {
+            $("#Disposition_Others_Description").prop('disabled', false);
+        }
+        $('#Dis_Others').change(function () {
+            if ($(this).is(":checked")) {
+                $("#Disposition_Others_Description").prop('disabled', false);
+            }
+            else {
+                $("#Disposition_Others_Description").prop('disabled', true);
+            }
+            //---------------End Disposition----------------------//
+        });
+
+        if ('@Model.Overall_Status' == '@Material_Overall_Status.Closed') {
+            Disable("divReject");
+            //added by sun 17-03-2017
+            $("#Remarks").removeAttr("readonly");
+        }
+    });
+
+    function Search_Product_KeyEnter() {
+        if (event.keyCode == 13) {
+            var pCode = $("#Search_Product").val();
+            window.location.href = '@Url.Action("MaterialRejectInfo", "Material", new { operation = Model.operation })&pCode=' + pCode;
+        }
+    }
+
+    function Product_Onchange() {
+        var pCode = $("#Product_Code").val();
+        window.location.href = '@Url.Action("MaterialRejectInfo", "Material", new { operation = Model.operation })&pCode=' + pCode;
+    }
+
+
+</script>
+
+@using (Html.BeginForm("MaterialRejectInfo", "Material", FormMethod.Post, new { role = "form", onkeydown = "return event.keyCode!=13" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Raw_Material_ID)
+    @Html.HiddenFor(m => m.Material_Reject_ID)
+    @Html.HiddenFor(m => m.operation)
+
+    @Html.HiddenFor(m => m.Close)
+    @Html.HiddenFor(m => m.Role_Name)
+    @Html.HiddenFor(m => m.Modify)
+    @Html.HiddenFor(m => m.RMR_No)
+
+    /* Add by sun  06-09-2017*/
+    @Html.HiddenFor(m => m.GM_Approval_Name)
+    @Html.HiddenFor(m => m.PD_Approval_Name)
+    @Html.HiddenFor(m => m.QA_Approval_Name)
+    @Html.HiddenFor(m => m.Logistics_Approval_Name)
+    @Html.HiddenFor(m => m.Sales_Approval_Name)
+    @Html.HiddenFor(m => m.GM_Approval)
+
+    <div class="main">
+        @Html.AppMessage(Model.result.Code, Model.result.Msg)
+        @Html.AppPageHeader(Resource.Reject_Matrials_Report)
+        <section class="tile">
+            <div class="tile-body " id="divReject">
+                @if (Model.operation == Operation.C)
+                {
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m => m.Search_Product),
+                           @Html.AppBlank(),
+                           //@Html.AppLabelFor(m => m.Project_Name),
+                       }, 4
+                  )
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             //@Html.AppTextboxFor(m => m.Search_Product, new { onkeydown = "Search_Product_KeyEnter(event)" }),
+                          @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new { onchange = "Product_Onchange()"}),
+                          @Html.AppButtonModal("Retrive Product Information", "modal-product", AppColor.none, new { @readonly = (Model.operation == Operation.C ? false : true) }),
+                          //@Html.AppTextboxFor(m =>m.Project_Name),
+                       }, 4
+                  )
+                }
+                @*else
+                    {
+                       @Html.AppLabelFor(m => m.Project_Name)
+                       @Html.AppTextboxFor(m => m.Project_Name, 4)
+                    }*@@Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Product_Name),
+                           @Html.AppLabelFor(m => m.Overall_Status),
+                       }, 4
+                  )
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Product_Code, new{ @readonly=true}),
+                           @Html.AppTextboxFor(m =>m.Product_Name),
+                          @Html.AppDropDownListFor(m => m.Overall_Status, Model.cRejectStatuslist ,new {@disabled = true}),
+                       }, 4
+                  )
+
+
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Lot_No),
+                           @Html.AppLabelFor(m =>m.Packaging),
+                       }, 4
+                  )
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Lot_No,new{@readonly = true}),
+                           @Html.AppDropDownListFor(m => m.Packaging, Model.cPackaginglist),
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             @Html.AppLabelFor(m =>m.Quantity),
+                                 @Html.AppLabelFor(m =>m.UOM),
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxDecimalFor(m =>m.Quantity),
+                           @Html.AppDropDownListFor(m => m.UOM, Model.cUOMlist),
+                       }, 4
+                  )
+
+                    @Html.AppLabelFor(m => m.Reject_From)
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                          @Html.AppRadioButtonFor(m =>m.Reject_From, new { id = "Reject_Customer",name ="Reject_From", text = Resource.Customer, value =  "Customer"}),
+                           @Html.AppTextboxFor(m =>m.Reject_Customer_Name),
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                          @Html.AppRadioButtonFor(m =>m.Reject_From, new { id = "Reject_Supplier", name ="Reject_From",text = Resource.Supplier, value =  "Supplier"}),
+                           @Html.AppTextboxFor(m =>m.Reject_Supplier_Name),
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                          @Html.AppRadioButtonFor(m =>m.Reject_From, new { id = "Reject_Inhouse",name ="Reject_From", text = Resource.Inhouse, value =  "Inhouse" }),
+                           @Html.AppTextboxFor(m =>m.Reject_Inhouse_Location),
+                       }, 4
+                  )
+
+                    @Html.AppLabelFor(m => m.Defect_Description)
+                    @Html.AppTextAreaFor(m => m.Defect_Description)
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                              @Html.AppLabelFor(m =>m.QA_Staff),
+                            @Html.AppLabelFor(m =>m.D8_No)
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                              @Html.AppTextboxFor(m =>m.QA_Staff),
+                            @Html.AppTextboxFor(m =>m.D8_No)
+                       }, 4
+                  )
+
+                    @Html.AppLabel(Resource.Disposition)
+                    @Html.AppCheckBoxFor(m => m.Disposition_RTS)
+                    @Html.AppCheckBoxFor(m => m.Disposition_Rework)
+                    @Html.AppCheckBoxFor(m => m.Disposition_Scrap)
+                    @Html.AppCheckBoxFor(m => m.Disposition_UAI, new { id = "UAI", name = "UAI" })
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                              @Html.AppCheckBoxFor(m =>m.Disposition_Others, new { id = "Dis_Others" }),
+                            @Html.AppTextboxFor(m =>m.Disposition_Others_Description)
+                       }, 4
+                  )
+
+                    @Html.AppLabelFor(m => m.Instructions)
+                    @Html.AppTextAreaFor(m => m.Instructions)
+
+                    @if (Model.Role_Name != Role_Name.PD)
+                    {
+                        @Html.HiddenFor(m => m.PD)
+                        @Html.HiddenFor(m => m.PD_Date)
+                    }
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           Html.AppLabel(Resource.Signed_By_MRT),
+                              @Html.AppCheckBoxFor(m =>m.PD, new { id = "PD",name ="PD", disabled= !(Model.Role_Name == Role_Name.PD)}),
+                            @Html.AppTextDateFor(m =>m.PD_Date)
+                       }, 4
+                  )
+
+
+                    @if (Model.Role_Name != Role_Name.QA)
+                    {
+                        @Html.HiddenFor(m => m.QA)
+                        @Html.HiddenFor(m => m.QA_Date)
+                    }
+                    @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                           @Html.AppBlank(),
+                           @Html.AppCheckBoxFor(m =>m.QA, new { id = "QA",name ="QA",@disabled= !(Model.Role_Name == Role_Name.QA)}),
+                           @Html.AppTextDateFor(m =>m.QA_Date)
+                       }, 4
+                  )
+
+                    @if (Model.Role_Name != Role_Name.Logistics)
+                    {
+                        @Html.HiddenFor(m => m.Logistics)
+                        @Html.HiddenFor(m => m.Logistics_Date)
+                    }
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppBlank(),
+                           @Html.AppCheckBoxFor(m =>m.Logistics, new { id = "Logistics",name ="Logistics",@disabled= !(Model.Role_Name == Role_Name.Logistics)}),
+                           @Html.AppTextDateFor(m =>m.Logistics_Date)
+                       }, 4
+                  )
+                    @if ((Model.Role_Name != Role_Name.Sales) && (Model.Role_Name != Role_Name.GM))
+                    {
+                        @Html.HiddenFor(m => m.Sales)
+                        @Html.HiddenFor(m => m.Sales_Date)
+                    }
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppBlank(),
+                           @Html.AppCheckBoxFor(m =>m.Sales, new { id = "Sales",name ="Sales",@disabled= !(Model.Role_Name == Role_Name.Sales || Model.Role_Name == Role_Name.GM)}),
+                           @Html.AppTextDateFor(m =>m.Sales_Date)
+                       }, 4
+                  )
+
+                    @if (Model.Role_Name == Role_Name.GM)
+                    {
+                        if (Model.PD == true && Model.QA == true && Model.Logistics == true && Model.Sales == true)
+                        {
+
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(m => m.GM_Approval_Date)
+                        }
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(m => m.GM_Approval_Date)
+                    }
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m=>m.GM_Approval_Date),
+                           @Html.AppBlank(),
+                           @Html.AppTextDateFor(m =>m.GM_Approval_Date)
+                       }, 4
+                  )
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m=>m.Disposition_Action_By),
+                           @Html.AppTextboxFor(m =>m.Disposition_Action_By),
+                           @Html.AppTextDateFor(m =>m.Disposition_Date)
+                       }, 4
+                  )
+
+                    @Html.AppLabelFor(m => m.Re_Inspection_On_Rework)
+                    @Html.AppTextAreaFor(m => m.Re_Inspection_On_Rework)
+
+
+                    @Html.AppLabelFor(m => m.Reject_Status)
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppRadioButtonFor(m =>m.Reject_Status, new { id = "Pass", text = Resource.Pass, value = "Pass"  }),
+                           @Html.AppRadioButtonFor(m =>m.Reject_Status, new { id = "Fail", text = Resource.Fail, value = "Fail" }),
+                           @Html.AppRadioButtonFor(m =>m.Reject_Status, new { id = "N/A", text = Resource.NA, value = "N/A" }),
+                       }, 2
+                  )
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m=>m.Carried_Out_By),
+                              @Html.AppTextboxFor(m =>m.Carried_Out_By),
+                           @Html.AppTextDateFor(m =>m.Carried_Out_Date)
+                       }, 4
+                  )
+
+
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabel(Resource.Remarks),
+                              @Html.AppLabelFor(m => m.Review_Date),
+                       }, 4
+                  )
+                    @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextAreaFor(m =>m.Remarks),
+                           @Html.AppTextDateFor(m =>m.Review_Date)
+                       }, 4
+                  )
+                </div>
+            </section>
+
+            <section class="tile">
+                <div class="tile-body ">
+                    @if (Model.Overall_Status == null || Model.Overall_Status == Material_Overall_Status.Open)
+                    {
+                        @Html.AppButton(Resource.Submit, AppButtonType.submit, AppColor.blue, new { name = "pStatus", value = Material_Overall_Status.Open, @disabled = readView })
+                    }
+                    @if (Model.Overall_Status == Material_Overall_Status.Open)
+                    {
+                        if (Model.Role_Name == Role_Name.GM && Model.PD == true && Model.QA == true && Model.Logistics == true && Model.Sales == true)
+                        {
+                            @Html.AppButton(Resource.Close_Rejection, AppButtonType.submit, AppColor.none, new { name = "pStatus", value = Material_Overall_Status.Closed, @disabled = readView })
+                        }
+                    }
+                    @if (Model.Overall_Status == Material_Overall_Status.Closed)
+                    {
+                        //added by sun 17-03-2017
+                        @Html.AppButton(Resource.Submit, AppButtonType.submit, AppColor.none, new { name = "pStatus", value = Fixed_Action.Update_Remark_Only, @disabled = readView })
+                        @Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialRejectForm", new { pRawID = Model.Raw_Material_ID, pRejID = Model.Material_Reject_ID, pSelStatus = Material_Status.Reject }), AppColor.none, new { Target = ActionTarget._blank })
+                    }
+                    @Html.AppActionLink(Resource.Cancel, Url.Action("MaterialReject", "Material", new { }), AppColor.none)
+                </div>
+            </section>
+
+            @{ Html.RenderPartial("ProductDlg", new ProductTransactionViewModels()
+         {
+             ProductTrancList = Model.ProductTrancList
+         }); }
+        </div>
+}

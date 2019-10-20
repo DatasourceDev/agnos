@@ -1,0 +1,169 @@
+﻿@model Agnos.Models.MaterialWithdrawViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.Material_Withdraw;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("MaterialWithdrawInfo", "Material", new { operation = Operation.D })' + '&pWID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+
+
+   function PrintForm() {
+      var pID = $("#Product_Code").val();
+      var pMonth = $("#Month").val();
+      var pYear = $("#Year").val();
+      var pProduct_Name = $("#Product_Name").val();
+      var pYear = $("#Year").val();
+      var pTank_No = $("#Tank_No").val();
+      var pPackaging_Type = $("#Packaging_Type").val();
+      var pTank_No = $("#Tank_No").val();
+      var pLocation = $("#Location").val();
+
+      if (pID != "") {
+         var url = '@Url.Action("WithdrawRawMaterialPrint", "Material", new { target = "_blank" })' + '&pProductCode=' + pID + '&pMonth=' + pMonth + '&pYear=' + pYear + '&pProduct_Name=' + pProduct_Name + '&pTank_No=' + pTank_No + '&pPackaging_Type=' + pPackaging_Type + '&pLocation=' + pLocation;
+
+         window.open(url);
+      }
+
+   }
+</script>
+
+
+@using (Html.BeginForm("MaterialWithdraw", "Material", FormMethod.Get, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Material_Withdraw)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Product_Name),
+                           @Html.AppLabelFor(m =>m.Month),
+                           @Html.AppLabelFor(m =>m.Year)
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist),
+                           @Html.AppTextboxFor(m => m.Product_Name),
+                           @Html.AppDropDownListFor(m =>m.Month , Model.cMonthlist),
+                           @Html.AppTextboxFor(m =>m.Year),
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Tank_No),
+                           @Html.AppLabelFor(m =>m.Packaging_Type ),
+                           @Html.AppLabelFor(m =>m.Location ),
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+            new MvcHtmlString[] {
+            @Html.AppDropDownListFor(m => m.Tank_No, Model.cTanklist),
+            @Html.AppDropDownListFor(m => m.Packaging_Type, Model.cPackaginglist),
+            @Html.AppTextboxFor(m => m.Location),
+            @Html.AppMultiControl(
+                                new MvcHtmlString[] {
+                                     @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green),
+                                    @Html.AppButton(Resource.Print_Form, AppButtonType.button, AppColor.none, new { onclick = "PrintForm();"}),
+                                }, 4
+                           ),
+            }, 3)
+         </div>
+      </section>
+
+      <section class="tile ">
+         <div class="tile-header ">
+            <h1>@Resource.Material_Withdraw</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body">
+            @if (Model.WithdrawMaterialList != null)
+            {
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+
+               headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+               headers.Add(new GridHeader() { Column_Name = Resource.Date });
+               headers.Add(new GridHeader() { Column_Name = Resource.From_Time });
+               headers.Add(new GridHeader() { Column_Name = Resource.To_Time });
+               headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.Finished_Goods });
+               headers.Add(new GridHeader() { Column_Name = Resource.Finished_Goods_Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.Qty, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Unit_of_Measure });
+               //headers.Add(new GridHeader() { Column_Name = Resource.Unit });
+               headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+               foreach (var row in Model.WithdrawMaterialList)
+               {
+                  var grow = new GridRow();
+                  var uomname = "";
+                  if (row.Global_Lookup_Data != null)
+                  {
+                     uomname = row.Global_Lookup_Data.Name;
+                  }
+
+                  grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Withdraw_Date) });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayTime(row.From_Time) });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayTime(row.To_Time) });
+                  grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.Finished_Goods });
+                  grow.Item.Add(new GridItem() { Value = row.Finished_Goods_Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Withdraw });
+                  grow.Item.Add(new GridItem() { Value = uomname });
+                  //grow.Item.Add(new GridItem() { Value = row.Unit });
+                  // grow.Item.Add(new GridItem() { Value = Html.AppActionLink(Resource.Detail, Url.Action("MaterialWithdrawInfo", "Material", new { pWID = row.Withdraw_ID, operation = Operation.U }), AppColor.orange) });
+
+                  grow.Item.Add(new GridItem()
+                  {
+                     Value = Html.AppMultiButton(
+                         new MvcHtmlString[] {
+                                Html.AppActionLink(Resource.Detail, Url.Action("MaterialWithdrawInfo", "Material", new { pWID = row.Withdraw_ID, operation = Operation.U }), AppColor.orange) ,
+                                Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Withdraw_ID+"');", @disabled = readView }),
+                                //Html.AppActionLink(Resource.Print_Form, Url.Action("WithdrawRawMaterialPrint", "Material", new { Withdraw_ID = row.Withdraw_ID}), AppColor.none,new {Target = ActionTarget._blank}),
+                            }),
+                  });
+
+                  rows.Add(grow);
+
+               }
+               @Html.AppGridData("wdatatable", headers, rows, @Html.AppGridAddButton(Resource.Btn_Add, Url.Action("MaterialWithdrawInfo", "Material", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView }))
+            }
+         </div>
+      </section>
+   </div>
+}

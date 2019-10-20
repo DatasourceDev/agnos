@@ -1,0 +1,421 @@
+﻿@model Agnos.Models.ComponentsViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+
+@{
+   ViewBag.Title = Resource.Template_Components;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<div class="main">
+   @Html.AppPageHeader(Resource.Template_Components)
+   <section class="tile">
+      <div class="tile-widget nopadding color green rounded-top-corners">
+         <ul class="nav nav-tabs tabdrop">
+            <li id="li-group"><a href="#group-tab" data-toggle="tab" onclick="Tb_Onclick()">@Resource.Groups</a></li>
+            <li id="li-field"><a href="#field-tab" data-toggle="tab" onclick="Tb_Onclick()">@Resource.Fields</a></li>
+            <li id="li-hdr"><a href="#hdr-tab" data-toggle="tab" onclick="Tb_Onclick()">@Resource.Headers</a></li>
+         </ul>
+      </div>
+      <div class="tile-body tab-content rounded-bottom-corners">
+         <div id="group-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "group")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.grouplist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+                     headers.Add(new GridHeader() { Column_Name = Resource.MoveUp, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.MoveDown, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Group_Name });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.grouplist)
+                     {
+                        var grow = new GridRow();
+                        if (i > 0)
+                        {
+                           grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Group_ID = row.Group_ID, Up = true, operation = Operation.U, tabAction = "group" }), AppColor.info, new { Icon = "fa fa-arrow-up " }) });
+                        }
+                        else
+                        {
+                           grow.Item.Add(new GridItem());
+                        }
+                        grow.Item.Add(new GridItem() { Value = row.Group_Order });
+                        if (i < Model.grouplist.Count - 1)
+                        {
+                           grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Group_ID = row.Group_ID, Down = true, operation = Operation.U, tabAction = "group" }), AppColor.info, new { Icon = "fa fa-arrow-down " }) });
+                        }
+                        else
+                        {
+                           grow.Item.Add(new GridItem());
+                        }
+                        grow.Item.Add(new GridItem() { Value = row.Group_Name });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                            Html.AppButtonModal(Resource.Edit, "modal-group", AppColor.orange, new { onclick="EditGroup('"+row.Group_ID+"','"+row.Group_Name+"','" + row.Role_ID + "');"}),
+                                            Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Group_ID+"','"+"group"+"');", @disabled = readView})
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+
+                     @Html.AppGridData("gdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-group", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+                  }
+               </div>
+            </section>
+         </div>
+         <div id="field-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "field")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.fieldlist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     //headers.Add(new GridHeader() { Column_Name = Resource.MoveUp, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index, Width = "50px" });
+                     //headers.Add(new GridHeader() { Column_Name = Resource.MoveDown, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Field_Name });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Data_Type });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Field_From });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.fieldlist)
+                     {
+                        var grow = new GridRow();
+                        //if (i > 0)
+                        //{
+                        //   grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Field_ID = row.Field_ID, Up = true, operation = Operation.U, tabAction = "field" }), AppColor.info, new { Icon = "fa fa-arrow-up " }) });
+                        //}
+                        //else
+                        //{
+                        //   grow.Item.Add(new GridItem());
+                        //}
+                        grow.Item.Add(new GridItem() { Value = row.Field_Order });
+                        //if (i < Model.fieldlist.Count - 1)
+                        //{
+                        //   grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Field_ID = row.Field_ID, Down = true, operation = Operation.U, tabAction = "field" }), AppColor.info, new { Icon = "fa fa-arrow-down " }) });
+                        //}
+                        //else
+                        //{
+                        //   grow.Item.Add(new GridItem());
+                        //}
+                        grow.Item.Add(new GridItem() { Value = row.Field_Name });
+                        grow.Item.Add(new GridItem() { Value = row.Data_Type });
+                        grow.Item.Add(new GridItem() { Value = row.Field_From });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                            Html.AppButtonModal(Resource.Edit, "modal-field", AppColor.orange, new { onclick="EditField('" + row.Field_ID + "', '"+row.Field_Name+"','" + row.Data_Type +"','"+ row.Field_From+"');"}),
+                                             Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Field_ID+"','"+"field"+"');", @disabled = readView})
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+
+                     @Html.AppGridData("fdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-field", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+                  }
+               </div>
+            </section>
+         </div>
+         <div id="hdr-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "hdr")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.headerlist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     //headers.Add(new GridHeader() { Column_Name = Resource.MoveUp, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index, Width = "50px" });
+                     //headers.Add(new GridHeader() { Column_Name = Resource.MoveDown, Data_Type = GridDataType.usercontrol, Width = "50px" });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Header_Name });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.headerlist)
+                     {
+                        var grow = new GridRow();
+                        //if (i > 0)
+                        //{
+                        //   grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Header_ID = row.Header_ID, Up = true, operation = Operation.U, tabAction = "hdr" }), AppColor.info, new { Icon = "fa fa-arrow-up " }) });
+                        //}
+                        //else
+                        //{
+                        //   grow.Item.Add(new GridItem());
+                        //}
+                        grow.Item.Add(new GridItem() { Value = row.Header_Order });
+                        //if (i < Model.headerlist.Count - 1)
+                        //{
+                        //   grow.Item.Add(new GridItem() { Value = Html.AppActionLink("", Url.Action("Components", "Template", new { Header_ID = row.Header_ID, Down = true, operation = Operation.U, tabAction = "hdr" }), AppColor.info, new { Icon = "fa fa-arrow-down " }) });
+                        //}
+                        //else
+                        //{
+                        //   grow.Item.Add(new GridItem());
+                        //}
+                        grow.Item.Add(new GridItem() { Value = row.Header_Name });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                            Html.AppButtonModal(Resource.Edit, "modal-hdr", AppColor.orange, new { onclick="EditHeader('"+row.Header_ID+"','"+row.Header_Name+"');"}),
+                                            Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Header_ID+"','"+"hdr"+"');", @disabled = readView}),
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+
+                     @Html.AppGridData("hdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-hdr", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+                  }
+               </div>
+            </section>
+         </div>
+      </div>
+   </section>
+
+   @using (Html.BeginForm("Components", "Template", FormMethod.Post, new { role = "form" }))
+   {
+      @Html.HiddenFor(m => m.Group_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      <div class="modal fade" id="modal-group" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyGroup">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Group</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Group_Name)
+                  @Html.AppTextboxFor(m => m.Group_Name)
+                  @Html.AppLabelFor(m => m.Role_ID)
+                  @Html.AppDropDownListFor(m => m.Role_ID, Model.cRolelist)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_Group", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "group" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      @Html.HiddenFor(m => m.Header_ID)
+      <div class="modal fade" id="modal-hdr" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyHDR">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Header</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Header_Name)
+                  @Html.AppTextboxFor(m => m.Header_Name)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_HDR", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "hdr" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+
+      @Html.HiddenFor(m => m.Field_ID)
+      <div class="modal fade" id="modal-field" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyField">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Field</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Field_Name)
+                  @Html.AppTextboxFor(m => m.Field_Name)
+                  @Html.AppLabelFor(m => m.Field_Data_Type)
+                  @Html.AppDropDownListFor(m => m.Field_Data_Type, Model.cDatatypelist)
+                  @Html.AppLabelFor(m => m.Field_From)
+                  @Html.AppDropDownListFor(m => m.Field_From, Model.cFieldformlist)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_field", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "field" })
+               </div>
+            </div>
+         </div>
+      </div>
+   }
+</div>
+
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyField');
+         Disable('divModifyHDR');
+         Disable('divModifyGroup');
+         $('#btn_Cancel_field').removeAttr('disabled');
+         $('#btn_Cancel_HDR').removeAttr('disabled');
+         $('#btn_Cancel_Group').removeAttr('disabled');
+      }
+
+      var module = '@Model.tabAction';
+      if ('@string.IsNullOrEmpty(Model.tabAction)' == "True") {
+         module = "group";
+      }
+      var liID = "li-" + module;
+      var tabID = module + "-tab";
+      $("#" + liID).addClass("active");
+      $("#" + tabID).addClass("active");
+
+
+      if ('@ViewData.ModelState.IsValid'.toLowerCase() == "false") {
+         if ('@Model.tabAction' == "group") {
+            $('#modal-group').modal('show');
+         }
+         else if ('@Model.tabAction' == "hdr") {
+            $('#modal-hdr').modal('show');
+         }
+         else if ('@Model.tabAction' == "field") {
+            $('#modal-field').modal('show');
+         }
+      }
+
+   })
+
+   function Tb_Onclick()
+   {
+      $('#group-tab .alert').remove();
+      $('#field-tab .alert').remove();
+      $('#hdr-tab .alert').remove();
+   }
+ 
+   function MoveGroup(gID)
+   {
+      $.ajax({
+         type: 'Get',
+         url: 'MoveUpGroup',
+         contentType: 'application/json; charset=utf-8',
+         data: { pGroupID: gID, pUp:true },
+         dataType: 'json',
+         success: function (data) {
+            if (data != null && data.length > 0) {
+               
+            } else {
+
+            }
+         }
+      });
+   }
+   function MoveDownGroup(gID) {
+
+   }
+
+   function EditGroup(gID, gname, rID) {
+      $('#operation').val('@Operation.U');
+      $('#Group_ID').val(gID);
+      $('#Group_Name').val(gname);
+    
+      if ($("#Role_ID option").length > 0)
+         $("#Role_ID").get(0).selectedIndex = 0;
+
+      $('#Role_ID').val(rID);
+      $('#Role_ID').trigger("chosen:updated");
+      $('.validation-error').remove();
+   }
+
+   function EditHeader(hID, hname) {
+      $('#operation').val('@Operation.U');
+      $('#Header_ID').val(hID);
+      $('#Header_Name').val(hname);
+
+      $('.validation-error').remove();
+   }
+
+   function EditField(fID, fname, dtype, ffrom) {
+      $('#operation').val('@Operation.U');
+      $('#Field_ID').val(fID);
+      $('#Field_Name').val(fname);
+      $('#Field_Data_Type').val(dtype);
+      $('#Field_From').val(ffrom);
+
+      $('#Field_Data_Type').trigger("chosen:updated");
+      $('#Field_From').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function DeleteGroup(gID) {
+      $('#operation').val('@Operation.D');
+      $('#Group_ID').val(gID);
+   }
+
+   function DeleteHeader(hID) {
+      $('#operation').val('@Operation.D');
+      $('#Header_ID').val(hID);
+   }
+
+   function DeleteField(fID) {
+      $('#operation').val('@Operation.D');
+      $('#Field_ID').val(fID);
+   }
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+      $('#Group_ID').val('');
+      $('#Group_Name').val('');
+      $('#Field_ID').val('');
+      $('#Field_Name').val('');
+      $('#Field_Data_Type').val('');
+      $('#Field_From').val('');
+      $('#Header_ID').val('');
+      $('#Header_Name').val('');
+
+      $('#Field_Data_Type').trigger("chosen:updated");
+      $('#Field_From').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function confirmDelete(pID, ptabAction) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+
+            if (ptabAction == "group")
+               var url = '@Url.Action("Components", "Template", new { operation = Operation.D })' + '&Group_ID=' + pID + '&tabAction=' + ptabAction;
+            else if (ptabAction == "field")
+               var url = '@Url.Action("Components", "Template", new { operation = Operation.D })' + '&Field_ID=' + pID + '&tabAction=' + ptabAction;
+            else if (ptabAction == "hdr")
+               var url = '@Url.Action("Components", "Template", new { operation = Operation.D })' + '&Header_ID=' + pID + '&tabAction=' + ptabAction;
+
+            window.location.href = url;
+         }
+      }
+   }
+</script>

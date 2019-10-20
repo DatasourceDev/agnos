@@ -1,0 +1,178 @@
+﻿@model Agnos.Models.CMSChargeInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Filling_Process;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   $(document).ready(function () {
+      if ('@Model.Page_Action' == 'New' && '@Model.IsOverLoad' != null) {
+         if ('@Model.IsOverLoad' == 'True') {
+            if ('@Model.Charging_Cl_Action' == '@Charging_Control_Action.Warning') {
+               //alert("Warning!    Max. No. Of Charging is " + @Model.Max_No_Of_Charging + "");
+            }
+            else if ('@Model.Charging_Cl_Action' == '@Charging_Control_Action.Discard') {
+               $("#btnSave").attr('disabled', 'disabled');
+               $("#btnClone").attr('disabled', 'disabled');
+            }
+         }
+      }
+
+      $('#Filling_Station_ID_Dispaly').change(function () {
+         $('#Filling_Station_ID').val($(this).children('option:selected').val());
+      });
+   });
+
+
+   function CheckDrumCode() {
+      if ('@Model.Page_Action' == 'New' || '@Model.Drum_Code' == '') {
+         var pDrumCode = $('#Drum_Code').val();
+         if (pDrumCode != null && pDrumCode != '') {
+            $('#btnSave').removeAttr('disabled', 'disabled');
+            $('#btnClone').removeAttr('disabled', 'disabled');
+            $('#divError').html("").removeAttr("Class", "alert alert-red");
+            $('#IsOverLoad').val(false);
+            $.ajax({
+               type: 'POST',
+               url: 'CheckDrumCode',
+               contentType: 'application/json; charset=utf-8',
+               data: JSON.stringify({ pDrumCode: pDrumCode }),
+               dataType: 'json',
+               success: function (data) {
+                  if (data != null) {
+                     $('#Max_No_Of_Charging').val(data.Max_No_Of_Charging);
+                     $('#No_Of_Charging').val(data.No_Of_Charging)
+                     $('#Charging_Cl_Action').val(data.Charging_Cl_Action);
+
+                     if (parseInt(data.No_Of_Charging) > parseInt(data.Max_No_Of_Charging)) {
+                        $('#IsOverLoad').val(true);
+                        if (data.Charging_Cl_Action == '@Charging_Control_Action.Warning') {
+                           //alert("Warning!    Max. No. Of Charging is " + data.Max_No_Of_Charging + "");
+                        }
+                        else if (data.Charging_Cl_Action == '@Charging_Control_Action.Discard') {
+                           //Disable("divCharging");
+                           $('#btnSave').attr('disabled', 'disabled');
+                           $('#btnClone').attr('disabled', 'disabled');
+                        }
+                     }
+
+                     //if (!data.Verifypass) {
+                     //   $('#divError')
+                     //      .html("<div >" + data.Msg + "</div>")
+                     //      .addClass("alert alert-red");
+                     //}
+
+                     if (!data.Verify_Purge) {
+                        var msg = "Drum Code has been not purge. please go thru purge process."
+                        $('#divError')
+                           .html("<div >" + msg + "</div>")
+                           .addClass("alert alert-red");
+                     }
+                  }
+               }
+            }).done(function () {
+
+            });
+         }
+      }
+   }
+
+</script>
+@using (Html.BeginForm("CMSChargeInfo", "CMS", FormMethod.Post, new { id = "CMSForm", role = "form", enctype = "multipart/form-data", onkeydown = "return event.keyCode!=13" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Filling_Process)
+      @Html.HiddenFor(m => m.Charge_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Filling_Station_ID)
+      @Html.HiddenFor(m => m.IsOverLoad)
+      @Html.HiddenFor(m => m.Charging_Cl_Action)
+      @Html.HiddenFor(m => m.Delivery_Status)
+      @Html.HiddenFor(m => m.Product_Code)
+      @Html.HiddenFor(m => m.Format_ID)
+      @Html.HiddenFor(m => m.Is_Clone)
+      @Html.HiddenFor(m => m.Page_Action)
+
+      <div id="divError">
+         @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      </div>
+      <section class="tile" id="divCharging">
+         @Html.AppSectionHeader(Resource.Filling_Process)
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabelFor(m => m.Drum_Code),
+                            @Html.AppLabelFor(m => m.Lot_No),
+                            @Html.AppLabelFor(m => m.Product_Code_Dispaly),
+                       }, 4
+                       )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextboxFor(m => m.Drum_Code ,new{ @readonly = (Model.Page_Action == "New"  | string.IsNullOrEmpty(Model.Drum_Code)  ? false : true) ,onchange="CheckDrumCode();"}),
+                            @Html.AppTextboxFor(m => m.Lot_No,new { @readonly = true}),
+                            @Html.AppDropDownListFor(m => m.Product_Code_Dispaly, Model.cProductlist,new { @disabled = true}),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabelFor(m => m.Filling_Station_ID),
+                            @Html.AppLabelFor(m => m.Quantity_Scanned),
+                            @Html.AppLabelFor(m => m.No_Of_Charging),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppDropDownListFor(m => m.Filling_Station_ID_Dispaly, Model.cStationlist ,new { @disabled = (Model.Page_Action == "New"  | string.IsNullOrEmpty(Model.Drum_Code)  ? false : true) }),
+                            @Html.AppTextboxFor(m => m.Quantity_Scanned,new { @readonly = true, @style = "text-align: right;" }),
+                            @Html.AppTextboxDecimalFor(m => m.No_Of_Charging,new { @readonly = true}),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabelFor(m => m.Max_No_Of_Charging),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextboxDecimalFor(m => m.Max_No_Of_Charging,new { @readonly = true}),
+                       }, 4
+                  )
+
+            @Html.AppLabelFor(m => m.Initial_Weight, 4)
+            @Html.AppTextboxDecimalFor(m => m.Initial_Weight, 4)
+            @Html.AppLabelFor(m => m.Final_Weight, 4)
+            @Html.AppTextboxDecimalFor(m => m.Final_Weight, 4)
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body ">
+            @if (Model.Delivery_Status == Delivery_Status.Completed)
+            {
+               @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { @disabled = true })
+            }
+            else
+            {
+               @Html.AppButton(Resource.Save_And_New, AppButtonType.submit, AppColor.blue, new { @disabled = readView, id = "btnSave", name = "Save_Mode", value = "SaveAndNew" })
+               @Html.AppButton(Resource.Save_And_Close, AppButtonType.submit, AppColor.blue, new { @disabled = readView, id = "btnClone", name = "Save_Mode", value = "SaveAndClose", @style = "margin-left:4px" })
+            }
+            @Html.AppActionLink(Resource.Cancel, Url.Action("CMSCharge", "CMS", new { }), AppColor.none)
+         </div>
+      </section>
+   </div>
+}

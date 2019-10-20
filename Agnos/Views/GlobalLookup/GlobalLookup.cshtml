@@ -1,0 +1,152 @@
+﻿@model Agnos.Models.GlobalLookupViewModel
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+
+@{
+   ViewBag.Title = Resource.Global_Lookup;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      @*if ('@readView' == "True") {
+         Disable('divModifyDetail');
+         $('#btn_Cancel').removeAttr('disabled');
+      }*@
+
+      if ('@ViewData.ModelState.IsValid'.toLowerCase() == "false") {
+            $('#modal-global').modal('show');
+      }
+
+   })
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+      $('#Def_ID').val($('#search_Def_ID').val());
+      $('#Lookup_Data_ID').val('');
+      $('#Data_Code').val('');
+      $('#Name').val('');
+      $('.validation-error').remove();
+   }
+
+   function EditGlobal(lID, dID, code, name)
+   {
+      $('#operation').val('@Operation.U');
+      $('#Def_ID').val(dID);
+      $('#Def_ID_Label').val(dID);
+      $('#Lookup_Data_ID').val(lID);
+      $('#Data_Code').val(code);
+      $('#Name').val(name);
+      $('.validation-error').remove();
+   }
+
+   function Def_Onchange()
+   {
+      window.location = '@Url.Action("GlobalLookup", "GlobalLookup")?search_Def_ID=' + $('#search_Def_ID').val();
+   }
+</script>
+
+@using (Html.BeginForm("GlobalLookup", "GlobalLookup", FormMethod.Get, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Global_Lookup)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.search_Def_ID),
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m => m.search_Def_ID, Model.cGlobalDefList, new { onchange = "Def_Onchange()"}),
+                           @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green )
+                       }, 3
+                  )
+         </div>
+      </section>
+
+      <section class="tile ">
+         <div class="tile-header ">
+            <h1>@Resource.Global_Lookup</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body">
+            @{
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+               headers.Add(new GridHeader() { Column_Name = Resource.Code });
+               headers.Add(new GridHeader() { Column_Name = Resource.Text });
+               headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+               if (Model.GlobalDataList != null)
+               {
+                  foreach (var row in Model.GlobalDataList)
+                  {
+                     var grow = new GridRow();
+                     grow.Item.Add(new GridItem() { Value = row.Data_Code });
+                     grow.Item.Add(new GridItem() { Value = row.Name });
+                     grow.Item.Add(new GridItem()
+                     {
+                        Value = Html.AppMultiButton(
+                            new MvcHtmlString[] {
+                                 Html.AppButtonModal(Resource.Edit, "modal-global", AppColor.orange, new { onclick="EditGlobal('"+row.Lookup_Data_ID+"','" + row.Def_ID + "','"+row.Data_Code+ "','"+ row.Name + "');"}),
+                                 Html.AppActionLink(Resource.Delete, Url.Action("GlobalLookup","GlobalLookup", new { operation = Operation.D,Lookup_Data_ID = row.Lookup_Data_ID }) , AppColor.danger,new{@disabled = readView})
+                              })
+                     });
+                     rows.Add(grow);
+                  }
+               }
+               @Html.AppGridData("prdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-global", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+            }
+         </div>
+      </section>
+   </div>
+}
+
+@using (Html.BeginForm("GlobalLookup", "GlobalLookup", FormMethod.Post, new { role = "form" }))
+{
+   @Html.HiddenFor(m => m.Lookup_Data_ID)
+   @Html.HiddenFor(m => m.operation)
+   <div class="modal fade" id="modal-global" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" id="divModifyDetail">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title"><strong>@Resource.Global_Lookup</strong></h4>
+            </div>
+            <div class="modal-body">
+               @Html.AppLabelFor(m => m.Def_ID)
+               @Html.AppDropDownList("Def_ID_Label", Model.cGlobalDefList,Model.search_Def_ID, new { @disabled = true })
+               @Html.AppLabelFor(m => m.Data_Code)
+               @Html.AppTextboxFor(w => w.Data_Code)
+               @Html.AppLabelFor(m => m.Name)
+               @Html.AppTextboxFor(w => w.Name)
+               @Html.HiddenFor(m => m.Def_ID)
+            </div>
+            <div class="modal-footer">
+               @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel", @data_dismiss = "modal", @aria_hidden = true })
+               @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary)
+            </div>
+         </div>
+      </div>
+   </div>
+}

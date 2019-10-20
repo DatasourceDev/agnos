@@ -1,0 +1,67 @@
+﻿@model Agnos.Models.Tmp_Log_Header_Row
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Text;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using Agnos.Common;
+@{
+   var i = Model.i;
+   var h = Model.h;
+}
+
+<div id="divHdr-@i-@h" class="item hdr-@i" style="min-height:350px">
+   <script type="text/javascript">
+      $(function () {
+         $(".chosen-select").chosen({ disable_search_threshold: 10 });
+      });
+   </script>
+   <div class="row">
+      <div class="col-md-4">
+         <h2>@Resource.Header </h2>
+      </div>
+      <div class="col-md-8">
+         <h2 style="text-align:right">
+            @Html.AppButton("", AppButtonType.submit, AppColor.none, new { Icon = "fa fa-arrow-left ", name = "HMove", value = "Left-" + i + "-" + h }) @(h + 1) @Html.AppButton("", AppButtonType.submit, AppColor.none, new { Icon = "fa fa-arrow-right ", name = "HMove", value = "Right-" + i + "-" + h })
+            @Html.AppActionLink("", "#", AppColor.danger, new { onclick = "DeleteHdr_Onclick('" + i + "','" + h + "')", icon = "fa fa-times" })
+         </h2>
+      </div>
+   </div>
+
+  
+   @Html.AppDropDownList(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "Header_ID"), Model.cHeaderlist, Model.Header_ID)
+   @Html.AppCheckBox(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "Sumary_Report_Display"), new { 
+      id = NameUtil.GenTmpLogsheet.GenHeaderID(i, h, "Sumary_Report_Display"), 
+      @checked = Model.Sumary_Report_Display,
+      Text = "Include into Summary Report?" ,
+      Value = true
+   })
+
+
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "Tmp_Log_Header_ID"), Model.Tmp_Log_Header_ID)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "Tmp_Log_Group_ID"), Model.Tmp_Log_Group_ID)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "Header_Order"), Model.Header_Order)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "i"), Model.i)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "h"), Model.h)
+
+   <input type="hidden" name="@NameUtil.GenTmpLogsheet.GenHeaderName(i, h, "RowAction")" id="@NameUtil.GenTmpLogsheet.GenHeaderID(i, h, "RowAction")" value="@Model.RowAction" />
+  
+   @if (Model.Tmp_Log_Map_Rows != null)
+   {
+      var m = 0;
+      foreach (var tmpmap in Model.Tmp_Log_Map_Rows)
+      {
+         if (tmpmap.RowAction != RAction.Delete)
+         {
+            tmpmap.m = m;
+            tmpmap.i = Model.i;
+            tmpmap.cDropdownTypeList = Model.cDropdownTypelist;
+            Html.RenderPartial("TmpLogsheetMap", tmpmap);
+            m++;
+         }
+      }
+   }
+</div>
+

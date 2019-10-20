@@ -1,0 +1,60 @@
+﻿@model Agnos.Models.MaterialFileAttach
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+@{
+   var label = Model.Attachment_Field;
+   if (Model.Attachment_Field == Attachment_Field_Name.COA)
+   {
+      label = "C.O.A.";
+   }
+   var aid = "";
+   if (Model.Attachment_ID.HasValue)
+   {
+      aid = Model.Attachment_ID.Value.ToString();
+   }
+   
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+
+}
+@Html.Hidden("Attachment_ID" + Model.Attachment_Field + Model.Index, Model.Attachment_ID)
+
+@if (Model.Index == 0)
+{
+   bool show = false;
+   if (Model.Attachment_ID != null)
+   {
+      show = true;
+   }
+
+
+   @Html.AppMultiControl(
+    new MvcHtmlString[] {
+        @Html.AppLabel(label),
+        @Html.AppFileUpload("uploadfile" + Model.Attachment_Field + Model.Index, new { name =  Model.Attachment_Field + "files-" + aid , @class="c"+ Model.Attachment_Field,@disabled = readView }),
+        @Html.AppMultiControl( new MvcHtmlString[] {
+            @Html.AppActionLink("",Url.Action("MaterialDisplayFile", "Material", new { pAttID = Model.Attachment_ID}),AppColor.none, new { id = "view" + Model.Attachment_Field + Model.Index,target="_blank", icon = "fa fa-search"} ),
+            @Html.AppButton("" ,AppButtonType.button, AppColor.red,new{id = "btnuploadfile" + Model.Attachment_Field + Model.Index, onclick="DeleteFileAttach('" +Model.Attachment_Field + Model.Index+ "')", icon = "fa fa-minus", style = (show ? "display:displayed;" : "display:none;"),@disabled = readView }),
+            @Html.AppButton("" ,AppButtonType.button, AppColor.greensea,new{onclick="NewFileAttach('" + Model.Attachment_Field+ "')", icon = "fa fa-plus",@disabled = readView })
+            },2)
+    }, 4)
+}
+else
+{
+   <div id="@Model.Attachment_Field@Model.Index">
+      @Html.AppMultiControl(
+    new MvcHtmlString[] {
+        @Html.AppBlank(),
+        @Html.AppFileUpload("uploadfile" + Model.Attachment_Field + Model.Index, new { name =  Model.Attachment_Field + "files-"+ aid, @class="c"+ Model.Attachment_Field,@disabled = readView }),
+        @Html.AppMultiControl( new MvcHtmlString[] {
+           @Html.AppActionLink("",Url.Action("MaterialDisplayFile", "Material", new { pAttID = Model.Attachment_ID}),AppColor.none, new { id = "view" + Model.Attachment_Field + Model.Index ,target="_blank", icon = "fa fa-search"} ),
+                      @Html.AppButton("" ,AppButtonType.button, AppColor.red,new{onclick="DeleteFileAttach('" +Model.Attachment_Field + Model.Index+ "')", icon = "fa fa-minus",@disabled = readView })
+            },2)
+        }, 4)
+   </div>
+}

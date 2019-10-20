@@ -1,0 +1,865 @@
+﻿@model Agnos.Models.LogsheetInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using AppFramework.Util;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using Agnos.Common;
+@using AgnosModel.Service;
+@using AgnosModel
+@{
+   ViewBag.Title = Resource.Logsheet;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+   var showpd = false;
+   var showpdappr = false;
+   var showqa = false;
+
+   if (Model.operation == Operation.U)
+   {
+      if ((Model.Role_Name == "PD") || (Model.Role_Name == "PD - HOD"))
+      {
+         showpd = true;
+      }
+      else if ((Model.Role_Name == "QA") || (Model.Role_Name == "QA - HOD"))
+      {
+         showqa = true;
+      }
+   }
+
+   var haveAttachment = false;
+   int countAtt = 0;
+   if (Model.Attachment_Files != null && Model.Attachment_Files.Count() > 0)
+   {
+      haveAttachment = true;
+      countAtt = Model.Attachment_Files.Count();
+   }
+}
+<link href="@AppSetting.SERVER_NAME/SBSTmpAPI/owl.carousel/owl-carousel/owl.carousel.css" rel="stylesheet">
+<link href="@AppSetting.SERVER_NAME/SBSTmpAPI/owl.carousel/owl-carousel/owl.theme.css" rel="stylesheet">
+<script src="@AppSetting.SERVER_NAME/SBSTmpAPI/owl.carousel/owl-carousel/owl.carousel.js"></script>
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyDetail');
+         Disable('divLogsheetBody');
+         Disable('divModifyDetailDown');
+      }
+      Disable('divDetailTop');
+
+      $('form').bind("keypress", function (e) {
+         if (e.keyCode == 13) {
+            e.preventDefault();
+            return false;
+         }
+      });
+
+      $("#print").click(function () {
+         var pcode = $("#Product_Code").val();
+         var ptempId = $("#Template_ID").val();
+         var plotno = $("#Lot_No").val();
+
+         if (plotno == "") {
+            alert('The Lot No. field is required.');
+            return false;
+         }
+
+         if (pcode != null && pcode != "" && ptempId > null && plotno != null && plotno != "") {
+            theForm.action = '@Url.Action("LogsheetInfo", "Template")' + '?tabAction=' + 'print';
+            theForm.method = 'post';
+            theForm.target = '_blank';
+            theForm.submit();
+         } else {
+            return false;
+         }
+      });
+
+      Display_Product_Form_Field_Onclick();
+
+      if ('@Model.Print'.toLowerCase() == 'printform')
+         $("#btnPrintForm").get(0).click();
+      else if ('@Model.Print'.toLowerCase() == 'printproductform')
+         $("#btnPrintProductForm").get(0).click();
+   })
+
+   function loadproductlist() {
+      var id = 'Product_Code';
+      $.ajax({
+         type: 'POST',
+         url: '@Url.Action("ReloadProductList", "Template")',
+         contentType: 'application/json; charset=utf-8',
+         dataType: 'json',
+         success: function (data) {
+            var result = '';
+            for (var i = 0, iL = data.length; i < iL; i++) {
+               result += '<option value="' + data[i].Value + '">' + data[i].Text + '</option>';
+            }
+            $('#' + id).html(result);
+            $('#' + id).trigger("chosen:updated");
+            CloseMask();
+         }
+      });
+   }
+
+   function Product_Onchange() {
+      var pcode = $("#Product_Code").val();
+      var url = '@Url.Action("LogsheetInfo", "Template", new { operation = Operation.C })' + '&Product_Code=' + pcode;
+      window.location.href = url;
+   }
+
+   function Temp_Onchange() {
+      var pcode = $("#Product_Code").val();
+      var ptempId = $("#Template_ID").val();
+      var plogId = $("#Logsheet_ID").val();
+      var url = '';
+      var operation = $("#operation").val();
+      if (operation == '@Operation.C') {
+         url = '@Url.Action("LogsheetInfo", "Template", new { operation = Operation.C })' + '&Product_Code=' + pcode + '&Template_ID=' + ptempId;
+      } else if (operation == '@Operation.U') {
+         url = '@Url.Action("LogsheetInfo", "Template", new { operation = Operation.U })' + '&Logsheet_ID=' + plogId + '&Template_ID=' + ptempId;
+      }
+
+      window.location.href = url;
+   }
+
+   function Display_Product_Form_Field_Onclick() {
+      if ($('#Display_Product_Form_Field').get(0).checked == true)
+         $('#divProductForm').show();
+      else
+         $('#divProductForm').hide();
+   }
+
+   function Range_Onchange(opt, from, to) {
+      if (opt.value == null || opt.value == '')
+         return true;
+
+      var val = parseFloat(opt.value);
+      if (isNaN(val)) {
+         alert('The input number is invalid.');
+         opt.value = '';
+         return false;
+      }
+
+      if (val >= from & val <= to)
+         return true;
+      else {
+         alert('The input number out of range.');
+         opt.value = '';
+         return false;
+      }
+
+   }
+
+
+</script>
+<script>
+   $(function () {
+      if ('@Model.operation' == '@Operation.C') {
+         LogsheetNewAttachment();
+      }
+      else {
+         if ('@haveAttachment'.toLowerCase() == 'false')
+            LogsheetNewAttachment();
+         else {
+            if ('@countAtt' == '3')
+               $('#btnAddnew').hide();
+         }
+      }
+
+      $(document).on('change', '.btn-file :file', function () {
+         var input = $(this),
+         numFiles = input.get(0).files ? input.get(0).files.length : 1,
+         label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+         var id = "#" + input.get(0).id;
+         var btn = "#btn" + input.get(0).id;
+         var filename = $(id).val();
+         if (filename != '') {
+            var ext = '';
+            var k = filename.lastIndexOf('.');
+            if (k >= 0) {
+               ext = filename.substring(k + 1).toLowerCase();
+            }
+            if (ext != 'jpg' && ext != 'jpeg' && ext != 'png' && ext != 'gif' && ext != 'csv' &&
+                 ext != 'txt' && ext != 'pdf' && ext != 'xls' & ext != 'xlsx' && ext != 'doc' && ext != 'docx') {
+               $(id).after($(id).clone(true)).remove();
+               $(id).parents('.input-group').find(':text').val('');
+               alert('Please upload .jpg, .jpeg, .png, .gif, .txt, .pdf, .xls, .xlsx, .doc or .docx');
+               return;
+            }
+            var fsize = $(id)[0].files[0].size;
+            if (fsize > 2097150) {
+               alert('Please upload file size is less than 2 MB');
+               $(id).after($(id).clone(true)).remove();
+               $(id).parents('.input-group').find(':text').val('');
+               return false;
+            }
+            var input = $(this).parents('.input-group').find(':text'),
+                log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+            console.log(log);
+            if (input.length) {
+               input.val(log);
+            } else {
+               if (log) alert(log);
+            }
+
+            $(btn).show();
+            /*save*/
+            var attID = $(id.replace('uploadfile', 'Attachment_ID')).val();
+            var blah = new FormData();
+            blah.append("file", $(id)[0].files[0]);
+            $.ajax({
+               async: true,
+               type: 'POST',
+               url: '@Url.Action("LogsheetSaveAttachment", "Template")?pAttID=' + attID + '&pLogID=@Model.Logsheet_ID',
+               data: blah,
+               dataType: 'json',
+               cache: false,
+               contentType: false,
+               processData: false,
+               success: function (data) {
+                  if (data != null) {
+                     var btnView = $(id.replace('uploadfile', 'view')).get(0);
+                     if (btnView != null)
+                        btnView.href = '@Url.Action("LogsheetDisplayAttachment", "Template")?pAttID=' + data;
+
+                     $(id.replace('uploadfile', 'Attachment_ID')).val(data);
+
+                  }
+               }
+            });
+         }
+      });
+   });
+   function InitFileAttach(index, filename) {
+      var id = "#uploadfile" + index;
+      $(id).parents('.input-group').find(':text').val(filename);
+
+   }
+
+   function LogsheetDeleteAttachment(attID) {
+
+      var btn = "#btnuploadfile" + attID;
+      var id = $('#Attachment_ID' + attID).val()
+      if (id != "" && id != null) {
+         $.ajax({
+            type: 'POST',
+            url: 'LogsheetDeleteAttachment',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ pAttachmentID: id }),
+            dataType: 'json',
+            success: function (data) {
+               if (data.code == 1) {
+                  alert('Attachment file has been deleted successfully.');
+               }
+            }
+         });
+      }
+      $("#uploadfile" + attID).val('');
+      $("#uploadfile" + attID).parents('.input-group').find(':text').val('');
+      $('#' + attID).hide();
+      $(btn).hide();
+
+      var checkMax = $(".cIndex:visible").length
+      if (checkMax == 3)
+         $('#btnAddnew').hide();
+      else
+         $('#btnAddnew').show();
+   }
+
+
+   function LogsheetNewAttachment() {
+
+      var index = $('.c').length;
+      var data = { pIndex: index, pModify: '@(Model.Modify.HasValue ? Model.Modify.Value : false )' };
+      $.ajax({
+         url: '@Url.Action("LogsheetAddAttachment", "Template")',
+         //Passes the content of an input up
+         data: data,
+         contentType: "application/json; charset=utf-8",
+         success: function (data) {
+            $('#divUpload').append(data);
+         }
+      });
+
+   }
+
+   function LogsheetAddAttachment() {
+      var checkMax = $(".cIndex:visible").length
+      if (checkMax < 3 || checkMax == undefined) {
+         LogsheetNewAttachment();
+         if (checkMax == 2)
+            $('#btnAddnew').hide();
+      } else {
+         $('#btnAddnew').hide();
+      }
+   }
+</script>
+
+
+@using (Html.BeginForm("LogsheetInfo", "Template", FormMethod.Post, new { role = "form", id = "theForm" }))
+{
+   var read = false;
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Logsheet_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Role_Name)
+      @Html.AppPageHeader(Resource.Logsheet)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile" id="divModifyDetail">
+         <div class="tile-body">
+            <div id="divDetailTop">
+               @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                     Html.AppLabelFor(m =>m.Product_Code),
+                     Html.AppLabelFor(m =>m.Template_ID),
+                     Html.AppLabelFor(m => m.Lotgsheet_Status),
+                  }, 4
+               )
+               @if (Model.Logsheet_ID.HasValue)
+               {
+                  @Html.AppMultiControl(
+                     new MvcHtmlString[] {
+                        Html.AppTextboxFor(m =>m.Product_Code),
+                        Html.AppDropDownListFor(m =>m.Template_ID, Model.cTmplist,new{onchange="Temp_Onchange();"}),
+                        Html.AppTextboxFor(m =>m.Lotgsheet_Status),
+                     }, 4
+                  )
+               }
+               else
+               {
+                  @Html.AppMultiControl(
+                     new MvcHtmlString[] {
+                        Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist,new{onchange="Product_Onchange();"}),
+                        Html.AppDropDownListFor(m =>m.Template_ID, Model.cTmplist,new{onchange="Temp_Onchange();"}),
+                        Html.AppTextboxFor(m =>m.Lotgsheet_Status),
+                     }, 4
+                  )
+               }
+
+               @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                  Html.AppLabelFor(m => m.Product_Name),
+                  Html.AppLabelFor(m =>m.Lot_No),
+                  Html.AppLabelFor(m =>m.Dilution_Tank_No),
+                  }, 4
+               )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  Html.AppTextboxFor(m =>m.Product_Name),
+                  Html.AppMultiControl(
+                     new MvcHtmlString[]{
+                        Html.AppTextboxFor(m =>m.Lot_No,new {onkeypress = "if (event.keyCode == 13){ lotNumberRetrive();}"}),
+                        Html.AppMultiControl(
+                           new MvcHtmlString[] {
+                              Html.AppButton(Resource.Retrieve,AppButtonType.button,AppColor.none, new{onclick="lotNumberRetrive();"}),
+                              Html.AppButton(Resource.Clear,AppButtonType.button,AppColor.none, new{onclick="lotNumberClear(true);"})
+                           }, 6)
+                  },6),
+                  Html.AppTextboxFor(m =>m.Dilution_Tank_No)
+               }, 4
+            )
+            </div>
+
+            @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                  Html.AppLabelFor(m => m.Work_Order_No),
+                  Html.AppLabelFor(m => m.Form_No),
+                  Html.AppLabelFor(m => m.Revision_No),
+               }, 4
+            )
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  Html.AppDropDownListFor(m =>m.Work_Order_No, Model.cWorkOrderNolist,new{@disabled = read}),
+                  Html.AppTextboxFor(m =>m.Form_No, new{ @readonly = true}),
+                  Html.AppTextboxFor(m =>m.Revision_No,new{ @readonly = true}),
+               }, 4
+            )
+
+
+
+            @Html.AppMultiControl(
+                  new MvcHtmlString[] {
+                   Html.AppCheckBoxFor(m =>m.Display_Product_Form_Field, new{onclick="Display_Product_Form_Field_Onclick()",@disabled = read}),
+               }, 4
+            )
+            <div id="divProductForm">
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  Html.AppLabelFor(m =>m.Packaging),
+                  Html.AppLabelFor(m =>m.Quantity),
+                    Html.AppLabelFor(m =>m.UOM),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  @Html.AppDropDownListFor(m => m.Packaging, Model.cPackaginglist),
+                  Html.AppTextboxFor(m =>m.Quantity),
+                    @Html.AppDropDownListFor(m => m.UOM, Model.cUOMlist),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                    Html.AppLabelFor(m =>m.RMR_No),
+                  Html.AppLabelFor(m =>m.Reason_If_Reject),
+                                Html.AppLabelFor(m =>m.Expiry_Date),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                     Html.AppTextboxFor(m =>m.RMR_No),
+                  Html.AppTextboxFor(m =>m.Reason_If_Reject),
+                   Html.AppTextDateFor(m =>m.Expiry_Date),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  Html.AppLabelFor(m =>m.Authorized_By),
+                   Html.AppLabelFor(m =>m.Authorized_Date),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                   Html.AppTextboxFor(m =>m.Authorized_By),
+                                Html.AppTextDateFor(m =>m.Authorized_Date),
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                    Html.AppLabelFor(m =>m.UAI),
+                  Html.AppLabelFor(m =>m.RTS),
+                    Html.AppLabelFor(m =>m.Rework),
+               }, 4
+            )
+
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                    Html.AppTextboxFor(m =>m.UAI),
+                  Html.AppTextboxFor(m =>m.RTS),
+                     Html.AppTextboxFor(m =>m.Rework),
+
+               }, 4
+            )
+
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                   Html.AppLabelFor(m =>m.Scrap),
+                    Html.AppLabelFor(m =>m.Dispose),
+                      Html.AppLabelFor(m =>m.Status)
+               }, 4
+            )
+               @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                    Html.AppTextboxFor(m =>m.Scrap),
+                        Html.AppDropDownListFor(m =>m.Dispose, Model.cDisposelist),
+                        Html.AppDropDownListFor(m =>m.Product_Status, Model.cStatuslist),
+               }, 4
+            )
+               @Html.AppLabelFor(m => m.Remarks)
+               @Html.AppTextAreaFor(m => m.Remarks)
+
+
+               <div id="divUpload">
+                  <br />
+                  @if (Model.Attachment_Files != null && Model.Attachment_Files.Count > 0)
+                  {
+                     for (var i = 0; i < Model.Attachment_Files.Count(); i++)
+                     {
+                        var row = Model.Attachment_Files[i];
+                        Html.RenderPartial("_UploadAttachmentRow", new UploadAttachmentFile()
+                        {
+                           Attachment_ID = row.Attachment_ID,
+                           Attachment_File = row.Attachment_File,
+                           Attachment_File_Name = row.Attachment_File_Name,
+                           Index = i,
+                           Modify = Model.Modify,
+                        });
+
+                        <script type="text/javascript">
+                           $(function () { InitFileAttach('@i', '@row.Attachment_File_Name') });
+                        </script>
+                     }
+                  }
+               </div>
+            </div>
+         </div>
+      </section>
+      <div id="divLogsheetBody">
+         @if (Model.Tmp != null && Model.Tmp.Tmp_Log_Group != null)
+         {
+            var i = 0;
+            foreach (var tmpG in Model.Tmp.Tmp_Log_Group.OrderBy(o => o.Template_Group.Group_Order))
+            {
+               if (tmpG.Template_Group != null)
+               {
+                  Logsheet_Group_Row group = null;
+                  if (Model.Logsheet_Group_Rows != null)
+                  {
+                     group = Model.Logsheet_Group_Rows.Where(w => w.Group_ID == tmpG.Group_ID).FirstOrDefault();
+                  }
+                  if (group != null)
+                  {
+                     @Html.Hidden(NameUtil.GenLogsheet.GenGroupName(i, "Logsheet_Group_ID"), group.Logsheet_Group_ID)
+                  }
+                  if (group == null) { group = new Logsheet_Group_Row(); }
+
+                  @Html.Hidden(NameUtil.GenLogsheet.GenGroupName(i, "Group_ID"), tmpG.Group_ID)
+                  if (tmpG.Template_Group.Group_Name != null && tmpG.Tmp_Log_Header.Count() > 0)
+                  {
+                     <script type="text/javascript">
+                        $(function () {
+                           var owl = $("#owl-demo-@i");
+                           owl.owlCarousel({
+                              items: 3, //10 items above 1000px browser width
+                              itemsDesktop: [1000, 3], //5 items between 1000px and 901px
+                              itemsDesktopSmall: [900, 1], // 3 items betweem 900px and 601px
+                              itemsTablet: [600, 1], //2 items between 600 and 0;
+                              itemsMobile: false, // itemsMobile disabled - inherit from itemsTablet option
+                           });
+
+                           // Custom Navigation Events
+                           $("#btnnext-@i").click(function () {
+                              owl.trigger('owl.next');
+                           })
+                           $("#btnprev-@i").click(function () {
+                              owl.trigger('owl.prev');
+                           })
+                           var owl = $("#owl-field-@i");
+                           owl.owlCarousel({
+                              items: 1, //10 items above 1000px browser width
+                              itemsDesktop: [1000, 1], //5 items between 1000px and 901px
+                              itemsDesktopSmall: [900, 1], // 3 items betweem 900px and 601px
+                              itemsTablet: [600, 1], //2 items between 600 and 0;
+                              itemsMobile: false, // itemsMobile disabled - inherit from itemsTablet option
+                           });
+                        });
+
+
+                     </script>
+
+                     <section class="tile" id="divModifyDetailDown">
+                        <div class="tile-body">
+                           <div class="row">
+                              <div class="col-md-12">
+                                 <h2><strong>@Resource.Group</strong> </h2>
+                              </div>
+                           </div>
+                           <div class="row">
+                              <div class="col-md-12">
+                                 <h4 style="padding-left:15px;">@tmpG.Template_Group.Group_Name </h4>
+                              </div>
+                           </div>
+                           <div class="row">
+                              <div class="col-md-3">
+                                 <h2><strong>@Resource.Field</strong> </h2>
+                              </div>
+                              <div class="col-md-9">
+                                 <h2><strong>@Resource.Header</strong> </h2>
+                              </div>
+                           </div>
+
+                           <div class="row">
+                              <div class="col-md-3">
+                                 <div id="owl-field-@i" class="owl-carousel">
+                                    <div class="item" style="padding-bottom:40px">
+                                       <div class="row" style="max-height:60px;min-height:60px">
+                                          <div class="col-md-12">
+                                             <h4>@tmpG.Sub_Group_Name </h4>
+                                          </div>
+                                       </div>
+                                       @if (tmpG.Tmp_Log_Field != null)
+                                       {
+                                          var f = 0;
+                                          foreach (var tmpField in tmpG.Tmp_Log_Field.OrderBy(o => o.Field_Order))
+                                          {
+                                             if (tmpField.Template_Field != null)
+                                             {
+                                                var comb = new List<ComboRow>();
+                                                comb.Add(new ComboRow() { Value = tmpField.Field_ID.ToString(), Text = tmpField.Template_Field.Field_Name });
+                                                @Html.AppDropDownList("", comb, tmpField.Field_ID, new { @disabled = true })
+
+                                                var field = new Logsheet_Field_Row();
+                                                if (group != null && group.Logsheet_Field_Rows != null)
+                                                {
+                                                   field = group.Logsheet_Field_Rows.Where(w => w.Field_ID == tmpField.Field_ID).FirstOrDefault();
+                                                }
+                                                if (field == null)
+                                                {
+                                                   field = new Logsheet_Field_Row();
+                                                }
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenFieldName(i, f, "Logsheet_Field_ID"), field.Logsheet_Field_ID)
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenFieldName(i, f, "Logsheet_Group_ID"), group.Logsheet_Group_ID)
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenFieldName(i, f, "Field_ID"), tmpField.Field_ID)
+
+                                             }
+
+
+                                             f++;
+                                          }
+                                       }
+                                    </div>
+                                 </div>
+
+                              </div>
+                              <div class="col-md-9">
+                                 @if (tmpG.Tmp_Log_Header != null)
+                                 {
+                                    var h = 0;
+                                    <div id="owl-demo-@i" class="owl-carousel">
+                                       @foreach (var tmphdr in tmpG.Tmp_Log_Header.OrderBy(o => o.Header_Order))
+                                       {
+                                          if (tmphdr.Template_Header != null)
+                                          {
+                                             var hdr = new Logsheet_Header_Row();
+                                             <div class="item" style="padding-bottom:40px">
+                                                @if (group != null && group.Logsheet_Header_Rows != null)
+                                                {
+                                                   hdr = group.Logsheet_Header_Rows.Where(w => w.Header_ID == tmphdr.Header_ID).FirstOrDefault();
+                                                }
+                                                @if (hdr == null)
+                                                {
+                                                   hdr = new Logsheet_Header_Row();
+                                                }
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenHeaderName(i, h, "Logsheet_Header_ID"), hdr.Logsheet_Header_ID)
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenHeaderName(i, h, "Logsheet_Group_ID"), group.Logsheet_Group_ID)
+                                                @Html.Hidden(NameUtil.GenLogsheet.GenHeaderName(i, h, "Header_ID"), tmphdr.Header_ID)
+
+                                                <div class="row" style="max-height:60px;min-height:60px">
+                                                   <div class="col-md-12">
+                                                      <h4>@tmphdr.Template_Header.Header_Name </h4>
+                                                   </div>
+                                                </div>
+                                                @if (tmphdr.Tmp_Log_Map != null)
+                                                {
+                                                   var m = 0;
+                                                   foreach (var tmpMap in tmphdr.Tmp_Log_Map.OrderBy(o => o.Map_Order))
+                                                   {
+                                                      var mapread = true;
+                                                      if (!read)
+                                                      {
+                                                         if (tmpG.Template_Group.Role == null)
+                                                         {
+                                                            mapread = false;
+                                                         }
+                                                         else if (tmpG.Template_Group.Role.Role_Name == Model.Role_Name)
+                                                         {
+                                                            mapread = false;
+                                                         }
+                                                      }
+                                                      var map = new Logsheet_Map_Row();
+                                                      if (hdr != null && hdr.Logsheet_Map_Rows != null)
+                                                      {
+                                                         map = hdr.Logsheet_Map_Rows.Where(w => w.Header_ID == tmpMap.Header_ID && w.Field_ID == tmpMap.Field_ID).FirstOrDefault();
+                                                      }
+                                                      if (map == null)
+                                                      {
+                                                         map = new Logsheet_Map_Row();
+                                                      }
+                                                      @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Logsheet_Map_ID"), map.Logsheet_Map_ID)
+                                                      @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Logsheet_Header_ID"), hdr.Logsheet_Header_ID)
+                                                      @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Option_Selected"), tmpMap.Option_Selected)
+                                                      @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Field_ID"), tmpMap.Field_ID)
+                                                      @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Header_ID"), tmpMap.Header_ID)
+
+                                                      <div class="row">
+                                                         <div class="col-md-12">
+                                                            @if (tmpMap.Option_Selected == Logsheet_Control_Type.Text)
+                                                            {
+                                                               @Html.AppTextbox(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), tmpMap.Option_Text, new { placeholder = "-", @readonly = true })
+                                                            }
+                                                            else if (tmpMap.Option_Selected == Logsheet_Control_Type.Field)
+                                                            {
+                                                               var lotno = "";
+                                                               if (tmpMap.Lot_No != null)
+                                                               {
+                                                                  lotno = "  - " + tmpMap.Lot_No;
+                                                               }
+                                                               @Html.AppTextbox(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), tmpMap.Option_Data_Type + " - " + tmpMap.Option_Field_From + lotno, new { placeholder = "-", @readonly = true })
+                                                            }
+                                                            else if (tmpMap.Option_Selected == Logsheet_Control_Type.Leave_As_Textbox)
+                                                            {
+                                                               @Html.AppTextbox(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), map.Text_Display, new { placeholder = "-", @readonly = mapread })
+                                                            }
+                                                            else if (tmpMap.Option_Selected == Logsheet_Control_Type.Range)
+                                                            {
+                                                               @Html.AppTextbox(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), map.Text_Display, new { placeholder = "[" + tmpMap.Option_Range_From + " ~ " + tmpMap.Option_Range_To + "]", onchange = "Range_Onchange(this," + tmpMap.Option_Range_From + "," + tmpMap.Option_Range_To + ")", @readonly = mapread })
+                                                            }
+                                                            else if (tmpMap.Option_Selected == Logsheet_Control_Type.Date)
+                                                            {
+                                                               @Html.AppTextDate(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), map.Text_Display, new { placeholder = "-", @readonly = mapread })
+                                                            }
+                                                            else if (tmpMap.Option_Selected == Logsheet_Control_Type.DropdownList)
+                                                            {
+                                                               var cDropdownlist = new List<ComboRow>();
+                                                               if (tmpMap.Option_Dropdown_Type == Dropdown_List_Type.Pass_Fail_NA)
+                                                               {
+                                                                  cDropdownlist.Add(new ComboRow() { Value = "", Text = "-" });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.Pass, Text = Reject_Status.Pass });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.Fail, Text = Reject_Status.Fail });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.NA, Text = Reject_Status.NA });
+                                                               }
+                                                               else if (tmpMap.Option_Dropdown_Type == Dropdown_List_Type.Resample_RJ_NA)
+                                                               {
+                                                                  cDropdownlist.Add(new ComboRow() { Value = "", Text = "-" });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.Resample, Text = Reject_Status.Resample });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.Reject, Text = Reject_Status.Reject });
+                                                                  cDropdownlist.Add(new ComboRow() { Value = Reject_Status.NA, Text = Reject_Status.NA });
+                                                               }
+                                                               else if (tmpMap.Option_Dropdown_Type == Dropdown_List_Type.TMAH_Storage_Tank_No)
+                                                               {
+                                                                  cDropdownlist.Add(new ComboRow() { Value = "", Text = "-" });
+                                                                  for (var j = 1; j <= 10; j++)
+                                                                  {
+                                                                     cDropdownlist.Add(new ComboRow() { Value = "ST-2" + j.ToString("000"), Text = "ST-2" + j.ToString("000") });
+                                                                  }
+                                                               }
+
+                                                               @Html.AppDropDownList(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), cDropdownlist, map.Text_Display, new { @disabled = mapread })
+                                                               if (mapread == true)
+                                                               {
+                                                                  @Html.Hidden(NameUtil.GenLogsheet.GenMapName(i, h, m, "Text_Display"), map.Text_Display)
+                                                               }
+                                                            }
+                                                         </div>
+                                                      </div>
+                                                            m++;
+
+                                                   }
+                                                }
+                                             </div>
+                                          }
+                                          h++;
+                                       }
+                                    </div>
+                                 }
+                              </div>
+                           </div>
+                        </div>
+                     </section>
+                  }
+               }
+               i++;
+            }
+         }
+      </div>
+      <section class="tile">
+         <div class="tile-body">
+            @Html.AppLabelFor(m => m.Note)
+            @Html.AppTextboxFor(m => m.Note, new { @readonly = read })
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body">
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                      @Html.AppLabelFor(m => m.PD_Issue),
+                       @Html.AppLabelFor(m => m.PD_Approval),
+                       @Html.AppLabelFor(m => m.QA_Approval)
+               }, 4
+            )
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                        @Html.AppTextDateFor(m => m.PD_Issue_Date, new { @readonly =    !((Model.Role_Name == "PD") || (Model.Role_Name == "PD - HOD")) }),
+                        @Html.AppTextDateFor(m => m.PD_Approval_Date, new { @readonly =  !((Model.Role_Name == "PD") || (Model.Role_Name == "PD - HOD")) }),
+                         @Html.AppTextDateFor(m => m.QA_Approval_Date, new { @readonly =  !((Model.Role_Name == "QA") || (Model.Role_Name == "QA - HOD")) })
+               }, 4
+            )
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                        @Html.AppTextboxFor(m => m.PD_Issue_Name, new { @readonly = true }),
+                        @Html.AppTextboxFor(m => m.PD_Approval_Name, new { @readonly = true }),
+                         @Html.AppTextboxFor(m => m.QA_Approval_Name, new { @readonly = true })
+               }, 4
+            )
+            @if (showpd)
+            {
+               @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                            Html.AppButton(Logsheet_Approval_Status.PD_Issue, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "pdissue", @disabled = readView }),
+                            Html.AppButton(Logsheet_Approval_Status.PD_Approval, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "pd", @disabled = readView }),
+                            Html.AppBlank(),
+                    }, 4)
+            }
+            else if (showqa)
+            {
+               @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppBlank(),
+                        Html.AppBlank(),
+                        Html.AppButton(Logsheet_Approval_Status.QA_Approval, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "qa", @disabled = readView })
+                    }, 4)
+            }
+
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body ">
+            @{
+            var btnshow = false;
+            if (String.IsNullOrEmpty(Model.Lotgsheet_Status))
+            {
+               btnshow = true;
+            }
+            }
+
+            @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "save", style = (btnshow ? "display:displayed;" : "display:none;"), @disabled = readView })
+
+            @Html.AppButton(Resource.Save_And_View_Detail, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "saveform", @disabled = readView })
+            @Html.AppButton(Resource.Save_Print_Form, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "printform", @disabled = readView })
+            @Html.AppButton(Resource.Save_Print_Product_Form, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "printproductform", @disabled = readView })
+
+            @Html.AppActionLink(Resource.Print_Form, Url.Action("LogsheetPrint", "Template", new { operation = Operation.U, Logsheet_ID = Model.Logsheet_ID }), AppColor.none, new { id = "btnPrintForm", Target = ActionTarget._blank, @style = "display:none" }),
+            @Html.AppActionLink("Product Form", Url.Action("LogsheetProductStatusForm", "Template", new { pLogsheetID = Model.Logsheet_ID }), AppColor.none, new { id = "btnPrintProductForm", Target = ActionTarget._blank, @style = "display:none" })
+
+            @Html.AppActionLink(Resource.Reset, Url.Action("LogsheetInfo", "Template", new { Logsheet_ID = Model.Logsheet_ID, operation = Model.operation }), AppColor.none, new { style = (btnshow ? "display:displayed;" : "display:none;"), @disabled = readView })
+            @Html.AppActionLink(Resource.Cancel, Url.Action("Logsheet", "Template"), AppColor.none)
+         </div>
+      </section>
+      @{ Html.RenderPartial("_LotNumber", Model); }
+   </div>
+}
+<style>
+   .owl-carousel .item {
+      border: 2px solid #69c1cc;
+      padding: 15px;
+      margin: 10px;
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px;
+   }
+
+
+
+   .customNavigation {
+      text-align: center;
+   }
+
+      .customNavigation a {
+         -webkit-user-select: none;
+         -khtml-user-select: none;
+         -moz-user-select: none;
+         -ms-user-select: none;
+         user-select: none;
+         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
+
+   .owl-carousel .owl-controls .owl-pagination {
+      position: inherit;
+   }
+
+   .div-Blur {
+      -webkit-filter: blur(2px);
+      -moz-filter: blur(2px);
+      -ms-filter: blur(2px);
+      -o-filter: blur(2px);
+      filter: blur(2px);
+   }
+</style>

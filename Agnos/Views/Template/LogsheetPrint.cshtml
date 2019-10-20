@@ -1,0 +1,102 @@
+﻿@*@model Agnos.Models.LogsheetInfoViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = @Resource.Logsheet;
+   Layout = null;
+}
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      @if (Model.Tmp != null && Model.Tmp.Tmp_Log_Group != null && Model.Logsheet_Group_Rows != null)
+      {
+         <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+            @foreach (var tmpG in Model.Tmp.Tmp_Log_Group.OrderBy(o=>o.Template_Group.Group_Order))
+            {
+               var group = Model.Logsheet_Group_Rows.Where(w => w.Group_ID == tmpG.Group_ID).FirstOrDefault();
+               if (tmpG.Template_Group != null && tmpG.Tmp_Log_Header.Count() > 0 && group != null)
+               {
+                  var hdrs = group.Logsheet_Header_Rows;
+                  var fields = group.Logsheet_Field_Rows;
+                  <tr>
+                     <td colspan="3">
+                        <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+                           <tr>
+                              <td>
+                                 <table cellpadding="2" cellspacing="2" style="width:100%" border="0">
+                                    <tr>
+                                       <td colspan="3" style="text-align:left;"> <h4><strong>@tmpG.Template_Group.Group_Name</strong></h4> </td>
+                                    </tr>
+                                 </table>
+                              </td>
+                           </tr>
+                           @if (tmpG.Tmp_Log_Field != null && tmpG.Tmp_Log_Field.Count > 0 && tmpG.Tmp_Log_Header != null && tmpG.Tmp_Log_Header.Count > 0 && hdrs != null && fields != null)
+                           {
+                              if (tmpG.Tmp_Log_Header != null && tmpG.Tmp_Log_Header.Count > 0)
+                              {
+                                 <tr>
+                                    <td>
+                                       <table cellpadding="2" cellspacing="2" style="width:100%" border="1">
+                                          <tr>
+                                             <td valign="top" bgcolor="#ccc">
+                                                <strong> @tmpG.Sub_Group_Name</strong>
+                                             </td>
+                                             @foreach (var tmphdr in tmpG.Tmp_Log_Header.OrderBy(o => o.Header_Order))
+                                             {
+                                                <td valign="top" style="text-align:center">
+                                                   <strong>@tmphdr.Template_Header.Header_Name</strong>
+                                                </td>
+                                             }
+                                          </tr>
+                                       </table>
+                                    </td>
+                                 </tr>
+                              }
+
+                              if (tmpG.Tmp_Log_Field != null && tmpG.Tmp_Log_Field.Count > 0)
+                              {
+                                 foreach (var tmpfield in tmpG.Tmp_Log_Field.OrderBy(o => o.Field_Order))
+                                 {
+                                    <tr>
+                                       <td>
+                                          <table cellpadding="2" cellspacing="2" style="width:100%" border="1">
+                                             <tr>
+                                                <td valign="top">
+                                                   @tmpfield.Template_Field.Field_Name
+                                                </td>
+                                                @foreach (var tmphdr in tmpG.Tmp_Log_Header.OrderBy(o => o.Header_Order))
+                                                {
+                                                   var hdr = hdrs.Where(w => w.Header_ID == tmphdr.Header_ID).FirstOrDefault();
+                                                   <td valign="top" style="text-align:center">
+                                                      @if (hdr != null && hdr.Logsheet_Map_Rows != null)
+                                                      {
+                                                         var map = hdr.Logsheet_Map_Rows.Where(w => w.Field_ID == tmpfield.Field_ID).FirstOrDefault();
+                                                         if (map != null && !string.IsNullOrEmpty(map.Text_Display))
+                                                         {
+                                                            @map.Text_Display
+                                                         }
+                                                         else
+                                                         {
+                                                            @:-
+                                                         }
+                                                      }
+                                                   </td>
+                                                }
+                                             </tr>
+                                          </table>
+                                       </td>
+                                    </tr>
+                                 }
+                              }
+                           }
+                        </table>
+                        <br />
+                     </td>
+                  </tr>
+               }
+            }
+         </table>
+      }
+
+   </div>
+</div>*@

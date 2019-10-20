@@ -1,0 +1,129 @@
+﻿@model Agnos.Models.LogsheetViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.LogsheetSummaryReport;
+   var read = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      read = true;
+   }
+}
+<script type="text/javascript">
+
+   function Print_Onclick() {
+      if ($('#Template_ID').val() == null || $('#Template_ID').val() == '') {
+         alert('The Template Code field is required.');
+         return;
+      }
+      var url = '@Url.Action("LogsheetSummaryPrint", "Template")?operation=' + '@Operation.U' + '&Template_ID=' + $('#Template_ID').val() + '&Product_Code=' + $('#Product_Code').val() + '&Lot_No=' + $('#Lot_No').val();
+      window.open(url, '_blank');
+   }
+
+   function Product_Onchange() {
+      var pcode = $("#Product_Code").val();
+      if (pcode != null && pcode != "") {
+         $.ajax({
+            type: "GET",
+            url: "GetTemplateLogsheetByProductCode",
+            data: { Product_Code: $('#Product_Code').val(), HasBlank: true },
+            //dataType: "script"
+         }).done(function (msg) {
+            //alert(msg);
+            $('#appConfig').html(msg);
+         });
+      } else {
+         $.ajax({
+            type: "GET",
+            url: "GetTemplateLogsheetAll",
+            data: {},
+            //dataType: "script"
+         }).done(function (msg) {
+            //alert(msg);
+            $('#appConfig').html(msg);
+         });
+
+      }
+   }
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.LogsheetSummaryReport)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   @using (Html.BeginForm("LogsheetSummaryReport", "Template", FormMethod.Get, new { role = "form" }))
+   {
+      <div id="appConfig"></div>
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Product_Code),
+                        Html.AppLabelFor(m => m.Template_Code),
+                        Html.AppLabelFor(m => m.Lot_No)
+
+                    }, 3
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist,new { onchange = "Product_Onchange()",id = "Product_Code"  }),
+                        Html.AppDropDownListFor(m =>m.Template_ID, Model.cTmplist, new { id = "Template_ID" }),
+                        Html.AppTextboxFor(m =>m.Lot_No),
+                        Html.AppMultiControl(
+                           new MvcHtmlString[] {
+                              Html.AppButton(Resource.Search, AppButtonType.submit, AppColor.green),
+                              Html.AppButton(Resource.Print, AppButtonType.button, AppColor.none, new {onclick="Print_Onclick()"})
+                           }, 4
+                        )
+                    }, 3
+                )
+         </div>
+      </section>
+   }
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Logsheet</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.LogsheetList != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+
+            headers.Add(new GridHeader() { Column_Name = Resource.Product });
+            headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Template_Code });
+            headers.Add(new GridHeader() { Column_Name = Resource.Date });
+
+            foreach (var row in Model.LogsheetList)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = row.Product_Code + " " + row.Product_Name });
+               grow.Item.Add(new GridItem() { Value = row.Lot_No });
+               grow.Item.Add(new GridItem() { Value = row.Template_Logsheet != null ? row.Template_Logsheet.Template_Code : "" });
+               grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Create_On) });
+
+               rows.Add(grow);
+            }
+            @Html.AppGridData("ldatatable", headers, rows)
+         }
+
+      </div>
+   </section>
+</div>

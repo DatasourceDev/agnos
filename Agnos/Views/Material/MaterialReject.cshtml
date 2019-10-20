@@ -1,0 +1,120 @@
+﻿@model Agnos.Models.MaterialRejectViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.Reject_Matrials_Report;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("MaterialMaterialRejectDelete", "Material", new { operation = Operation.D })' + '&Material_Reject_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+</script>
+
+@using (Html.BeginForm("MaterialReject", "Material", FormMethod.Get, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Reject_Matrials_Report)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Date_From),
+                           @Html.AppLabelFor(m =>m.Date_To)
+
+                       }, 3
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist),
+                           @Html.AppTextDateFor(m =>m.Date_From),
+                           @Html.AppTextDateFor(m =>m.Date_To),
+                           @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green)
+                               //@Html.AppActionLink("Send mail",Url.Action("TestSendEmail","Material"),AppColor.blue, new{target="_blank"})
+                       }, 3
+                  )
+         </div>
+      </section>
+
+      <section class="tile ">
+         <div class="tile-header ">
+            <h1>@Resource.Reject_Matrials_Report</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body">
+            @if (Model.MaterialRejList != null)
+            {
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+               //headers.Add(new GridHeader() { Column_Name = Resource.Project_Name });
+               headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+               headers.Add(new GridHeader() { Column_Name = Resource.Product_Name });
+               headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.Reject, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Unit_of_Measure });
+               headers.Add(new GridHeader() { Column_Name = Resource.Status });
+               headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "180px" });
+
+               foreach (var row in Model.MaterialRejList)
+               {
+                  var showprint = false;
+                  var grow = new GridRow();
+                  var uomname = "";
+                  if (row.Global_Lookup_Data != null)
+                  {
+                     uomname = row.Global_Lookup_Data.Name;
+                  }
+                  grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                  grow.Item.Add(new GridItem() { Value = row.Product_Name });
+                  grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.Quantity });
+                  grow.Item.Add(new GridItem() { Value = uomname });
+                  grow.Item.Add(new GridItem() { Value = row.Overall_Status });
+                  if (row.Overall_Status == Material_Overall_Status.Closed)
+                  {
+                     showprint = true;
+                  }
+
+                  grow.Item.Add(new GridItem()
+                  {
+                     Value = Html.AppMultiButton(
+                         new MvcHtmlString[] {
+                                Html.AppActionLink(Resource.Detail, Url.Action("MaterialRejectInfo","Material", new { operation = Operation.U,pRejID = row.Material_Reject_ID }) , AppColor.orange),
+                                Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialRejectForm", "Material", new { pRejID = row.Material_Reject_ID}), AppColor.none,new {Target = ActionTarget._blank, style= (showprint ? "display:displayed;" : "display:none;" ) }),
+                                Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Material_Reject_ID+"');", @disabled = readView,style= (showprint ? "display:none;" : "display:displayed;" ) }),
+                            }),
+                  });
+                  rows.Add(grow);
+               }
+               @Html.AppGridData("mdatatable", headers, rows, Html.AppGridAddButton(Resource.Btn_Add, Url.Action("MaterialRejectInfo", "Material", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView }))
+            }
+         </div>
+      </section>
+   </div>
+}

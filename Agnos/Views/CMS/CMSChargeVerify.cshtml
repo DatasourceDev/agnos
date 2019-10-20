@@ -1,0 +1,61 @@
+﻿@model Agnos.Models.CMSChargeViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Filling_Process;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+
+<script type="text/javascript">
+</script>
+
+@Html.AppPageHeader(Resource.Filling_Process)
+@Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+@using (Html.BeginForm("CMSChargeVerify", "CMS", FormMethod.Post, new { id = "CMSForm", role = "form", enctype = "multipart/form-data", onkeydown = "return event.keyCode!=13" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.HiddenFor(m => m.Charge_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      <section class="tile" id="divpurge">
+         @Html.AppSectionHeader(Resource.Filling_Process)
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabelFor(m => m.Drum_Code),
+                            @Html.AppLabelFor(m => m.Lot_No),
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextboxFor(m => m.Drum_Code),
+                            @Html.AppTextboxFor(m => m.Lot_No),
+                       }, 4
+                  )
+
+            <div class="tile-body">
+               <div class="col-md-12">
+                  <div class="validation-error">
+                     @Html.ValidationMessage("Message_Error")
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body ">
+            @Html.AppButton("Next", AppButtonType.submit, AppColor.blue, new { @disabled = readView, })
+            @Html.AppActionLink(Resource.Cancel, Url.Action("CMSCharge", "CMS", new { }), AppColor.none)
+         </div>
+      </section>
+   </div>
+}

@@ -1,0 +1,50 @@
+﻿@model Agnos.Models.DailyPlanningViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Daily_Production_Planning;
+}
+
+@if (Model.DailyPlannings != null)
+{
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table cellpadding="2" cellspacing="1" style="width:100%;" border="1">
+         <tr>
+            @foreach (var prod in Model.DailyPlannings)
+            {
+               <td>
+
+                  <table>
+                     <tr>
+                        <td colspan="2" style="text-align: center; border: 1pt solid black;">@prod.Product_Code</td>
+                     </tr>
+                     <tr>
+                        <td style="border: 1pt solid black; width:50%;">@Resource.Lot_No</td>
+                        <td style="border: 1pt solid black; width:50%;">TMAH Lot No.</td>
+                        <td style="border: 1pt solid black; width:50%;">Usage Only</td>
+                     </tr>
+                     @foreach (var lot in prod.Logsheets)
+                     {
+                        <tr>
+                           <td>
+                              @lot.Lot_No
+                           </td>
+                           <td>
+                              @lot.TMAH_Lot_No
+                           </td>
+                           <td>
+                              @lot.Usage_Only
+                           </td>
+                        </tr>
+                     }
+                  </table>
+               </td>
+            }
+         </tr>
+      </table>
+   </div>
+}
+
+
+

@@ -1,0 +1,181 @@
+﻿@model Agnos.Models.UserViewModel
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Text;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using System.Data.Entity;
+
+@{
+   ViewBag.Title = Resource.User;
+   var read = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      read = true;
+   }
+}
+<script type="text/javascript">
+   $(function () {
+
+      //Function Modify
+      if ('@read' == "True") {
+         Disable('divModifyDetail');
+         $('#btn_Cancel').removeAttr('disabled');
+      }
+
+      if ('@ViewData.ModelState.IsValid' == "False") {
+         $('#modal-UserInfo').modal('show');
+         if ('@Model.operation' == '@Operation.C') {
+            $('#register').show();
+         } else {
+            $('#register').hide();
+         }
+      }
+   })
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+
+      $('#Profile_ID').val(0);
+      $('#Email_Address').val('');
+      $('#Name').val('');
+      $('#LDAP_Username').val('');
+      $('#Password').val('');
+      $('#Confirm_Password').val('');
+
+      $('#Email_Notification').get(0).checked = false;
+
+      if ($("#Role_ID option").length > 0)
+         $("#Role_ID").get(0).selectedIndex = 0;
+
+      $('#Role_ID').trigger("chosen:updated");
+      $('#operation').trigger("chosen:updated");
+
+      $('#register').show();
+      $('.validation-error').remove();
+   }
+
+   function EditUserInfo(pID, pEmail, pLDIF, pRoleID, pName, pEmailNotification) {
+      $('#operation').val('@Operation.U');
+
+      $('#Profile_ID').val(pID);
+      $('#Email_Address').val(pEmail);
+      $('#Name').val(pName);
+      $('#LDAP_Username').val(pLDIF);
+      $('#Role_ID').val(pRoleID);
+
+      $('#Email_Notification').get(0).checked = false;
+      if (pEmailNotification == "True")
+         $('#Email_Notification').get(0).checked = true;
+
+      $('#Role_ID').trigger("chosen:updated");
+
+      $('#register').hide();
+      $('.validation-error').remove();
+   }
+
+
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("Users", "User", new { operation = Operation.D })' + '&Profile_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+</script>
+
+<div class="main" id="divModify">
+   @Html.AppPageHeader(Resource.User)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.User</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.Userlist != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+            headers.Add(new GridHeader() { Column_Name = Resource.Email });
+            headers.Add(new GridHeader() { Column_Name = Resource.Name });
+            headers.Add(new GridHeader() { Column_Name = Resource.LDAP_Username });
+            headers.Add(new GridHeader() { Column_Name = Resource.Role });
+            headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+            foreach (var row in Model.Userlist)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = row.Email_Address });
+               grow.Item.Add(new GridItem() { Value = row.Name });
+               grow.Item.Add(new GridItem() { Value = row.LDAP_Username });
+               grow.Item.Add(new GridItem() { Value = row.Role.Role_Name });
+               grow.Item.Add(new GridItem()
+               {
+                  Value = Html.AppMultiButton(
+                      new MvcHtmlString[] {
+                                    Html.AppButtonModal(Resource.Edit, "modal-UserInfo", AppColor.orange, new { onclick="EditUserInfo('"+row.Profile_ID+"','"+row.Email_Address+"','"+row.LDAP_Username+"','"+row.Role_ID+"','"+row.Name+"','"+(row.Email_Notification.HasValue ? row.Email_Notification.Value : false)+ "');"}),
+                                    Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new {onclick = "confirmDelete('"+row.Profile_ID+"');",@disabled = read}),
+                                    //Html.AppActionLink(Resource.Delete, Url.Action("Users","User", new {operation = Operation.D,Profile_ID = row.Profile_ID }) , AppColor.danger)
+                            })
+               });
+               rows.Add(grow);
+            }
+
+            @Html.AppGridData("ptdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-UserInfo", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+         }
+      </div>
+   </section>
+</div>
+
+
+@using (Html.BeginForm("Users", "User", FormMethod.Post, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   @Html.HiddenFor(m => m.operation)
+   @Html.HiddenFor(m => m.Profile_ID)
+   @Html.HiddenFor(m => m.Modify)
+   <div id="appConfig"></div>
+   <div class="modal fade" id="modal-UserInfo" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" id="divModifyDetail">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title"><strong>@Resource.User_Information</strong></h4>
+            </div>
+            <div class="modal-body">
+               @Html.AppLabelFor(m => m.Email_Address)
+               @Html.AppTextboxFor(m => m.Email_Address)
+
+               <div id="register" name="register">
+                  @Html.AppLabelFor(m => m.Password)
+                  @Html.AppPasswordFor(m => m.Password)
+                  @Html.AppLabelFor(m => m.Confirm_Password)
+                  @Html.AppPasswordFor(m => m.Confirm_Password)
+               </div>
+
+               @Html.AppLabelFor(m => m.Name)
+               @Html.AppTextboxFor(m => m.Name)
+
+               @Html.AppLabelFor(m => m.LDAP_Username)
+               @Html.AppTextboxFor(m => m.LDAP_Username)
+
+
+               @Html.AppLabelFor(m => m.Role_ID)
+               @Html.AppDropDownListFor(m => m.Role_ID, Model.cRole)
+
+               @Html.AppCheckBoxFor(m => m.Email_Notification)
+
+            </div>
+            <div class="modal-footer">
+               @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel", @data_dismiss = "modal", @aria_hidden = true })
+               @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary)
+            </div>
+         </div>
+      </div>
+   </div>
+}

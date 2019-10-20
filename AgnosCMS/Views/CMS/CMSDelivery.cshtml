@@ -1,0 +1,102 @@
+﻿@model AgnosCMS.Models.CMSDeliveryViewModels
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Delivery;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("CMSDeliveryInfo", "CMS", new { operation = Operation.D })' + '&Delivery_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Delivery)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+   @using (Html.BeginForm("CMSDelivery", "CMS", FormMethod.Get, new { role = "form" }))
+   {
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Delivery_Order_No),
+                    }, 4
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppTextboxFor(m =>m.Delivery_Order_No),
+                        Html.AppButton(Resource.Search, AppButtonType.submit, AppColor.green)
+                    }, 4
+                )
+         </div>
+      </section>
+   }
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Delivery</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.Deliverylist != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+            headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+            headers.Add(new GridHeader() { Column_Name = Resource.Delivery_Order_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Delivered });
+            headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "180px" });
+            var i = 0;
+            foreach (var row in Model.Deliverylist)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = (i + 1) });
+               grow.Item.Add(new GridItem() { Value = row.Delivery_Order_No });
+
+               if (row.Completed.HasValue && row.Completed.Value)
+               {
+                  grow.Item.Add(new GridItem() { Value = "PASS" });
+               }
+               else
+               {
+                  grow.Item.Add(new GridItem() { });
+               }
+               
+               grow.Item.Add(new GridItem()
+               {
+                  Value = Html.AppMultiButton(
+                      new MvcHtmlString[] {
+                                   Html.AppActionLink(Resource.Detail, Url.Action("CMSDeliveryInfo","CMS", new { operation = Operation.U,Delivery_ID = row.Delivery_ID }) , AppColor.orange),
+                                   Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Delivery_ID+"');", @disabled = readView }),
+                               })
+               });
+               rows.Add(grow);
+               i++;
+            }
+            @Html.AppGridData("ldatatable", headers, rows, Html.AppGridAddButton(Resource.Btn_Add, Url.Action("CMSDeliveryInfo", "CMS", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView }))
+         }
+      </div>
+   </section>
+</div>
+

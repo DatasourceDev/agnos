@@ -1,0 +1,258 @@
+﻿@model Agnos.Models.MaterialViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.Incoming_Raw_Material_Report;
+}
+<script type="text/javascript">
+   $(function () {
+
+   });
+   function Product_Onchange() {
+       $("#Product_Code_Print").trigger("chosen:updated");
+   }
+
+   function ViewAttachment(pAttID, pAttType) {
+      var index = $('#Deldatatable').length;
+      var data = { index: index, pAttID: pAttID, pAttType: pAttType };
+      $.ajax({
+         url: '@Url.Action("MaterialViewAttachmentFile", "Material")',
+         data: data,
+         contentType: "application/json; charset=utf-8",
+         success: function (data) {
+            $('#divAttachmentCOA').html(data);
+            $('#modal-attachment').modal('show');
+         }
+      });
+   }
+
+    function PrintForm() {
+       var pID = $("#Product_Code").val();
+        var pStartDate = $("#Date_From").val();
+        var pEndDate = $("#Date_To").val();
+        if (pID != "") {
+           var url = '@Url.Action("MaterialChecklistForm", "Material", new { target = "_blank" })' + '&pProductCode=' + pID + '&pDateFrom=' + pStartDate + '&pDateTo=' + pEndDate;
+            window.open(url);
+        }
+        else
+        {
+            alert(' The Product Code is required.');
+        }
+    }
+</script>
+
+@using (Html.BeginForm("MaterialChecklist", "Material", FormMethod.Get, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Incoming_Raw_Material_Checklist)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Date_From),
+                           @Html.AppLabelFor(m =>m.Date_To)
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist),
+                           @Html.AppTextDateFor(m =>m.Date_From),
+                           @Html.AppTextDateFor(m =>m.Date_To),
+                           @Html.AppMultiControl(
+                                new MvcHtmlString[] {
+                           @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green ),
+                                      @Html.AppButton(Resource.Print_Form, AppButtonType.button, AppColor.none, new { onclick = "PrintForm();"})    
+                                }, 3
+                           )
+                       }, 3
+                  )
+
+         </div>
+      </section>
+
+      <section class="tile ">
+         <div class="tile-header ">
+            <h1>@Resource.Incoming_Raw_Material_Checklist</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body">
+             @*<div class="tile-body ">
+                 @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                       }, 3
+                  )
+
+                 @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m => m.Product_Code_Print, Model.cProductlist,new { onchange = "Product_Onchange()"}),
+                       }, 3
+                  )
+
+             </div>*@
+
+            @if (Model.RawMaterialList != null)
+            {
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+               headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+               headers.Add(new GridHeader() { Column_Name = Resource.Receiving_Date });
+               headers.Add(new GridHeader() { Column_Name = Resource.Qty, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Pass, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Pending, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Reject, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Unit_of_Measure });
+               headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.COA });
+               headers.Add(new GridHeader() { Column_Name = Resource.Dented });
+               headers.Add(new GridHeader() { Column_Name = Resource.Hole });
+               headers.Add(new GridHeader() { Column_Name = Resource.Expiry_Date });
+               //headers.Add(new GridHeader() { Column_Name = Resource.Unit_of_Measure });
+               headers.Add(new GridHeader() { Column_Name = Resource.Record_By });
+               
+               headers.Add(new GridHeader() { Column_Name = Resource.COA, Data_Type = GridDataType.usercontrol, Width = "45px" });
+               headers.Add(new GridHeader() { Column_Name = Resource.Invoice, Data_Type = GridDataType.usercontrol, Width = "45px" });
+               headers.Add(new GridHeader() { Column_Name = Resource.Packing, Data_Type = GridDataType.usercontrol, Width = "45px" });
+
+               foreach (var row in Model.RawMaterialList)
+               {
+                  var grow = new GridRow();
+                  var uomname = "";
+                  if (row.Global_Lookup_Data != null)
+                  {
+                     uomname = row.Global_Lookup_Data.Name;
+                  }
+                  grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Receiving_Date) });
+                  grow.Item.Add(new GridItem() { Value = row.Total_Receiving });
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Pass });
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Pending });
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Reject });
+                  grow.Item.Add(new GridItem() { Value = uomname });
+                  grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.COA });
+                  grow.Item.Add(new GridItem() { Value = (row.Dented.HasValue && (row.Dented.Value == true) ? Resource.Yes : "No") });
+                  grow.Item.Add(new GridItem() { Value = (row.Hole.HasValue && (row.Hole.Value == true) ? Resource.Yes : "No") });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Expiring_Date) });
+                  //grow.Item.Add(new GridItem() { Value = "" });
+                  grow.Item.Add(new GridItem() { Value = row.User_Profile != null ? row.User_Profile.Name : "" });
+                  //-------------------------------COA-----------------------------//
+                  var coa = row.Raw_Material_Attachment.Where(w => w.Attachment_Field == Attachment_Field_Name.COA && w.Record_Status != Record_Status.Delete).ToList();
+                  if (coa.Count() == 1)
+                  {
+                     grow.Item.Add(new GridItem()
+                     {
+                        Value = Html.AppMultiButton(
+                                 new MvcHtmlString[] { 
+                                  Html.AppActionLink("",Url.Action("MaterialDisplayFile", "Material", new {pAttID = row.Raw_Material_Attachment.Where(w => w.Record_Status != Record_Status.Delete ).Select(s => s.Attachment_ID).FirstOrDefault() }),AppColor.none, new {target="_blank", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                     });
+                  }
+                  else
+                  {
+                     if (coa.Count() == 0 || coa == null)
+                     {
+                        grow.Item.Add(new GridItem() { });
+                     }
+                     else
+                     {
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                                    new MvcHtmlString[] {
+                                  Html.AppButton("" ,AppButtonType.button, AppColor.none,new{onclick="ViewAttachment('"+row.Raw_Material_ID+"','"+Attachment_Field_Name.COA+"');", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                        });
+                     }
+                  }
+                  //-------------------------------Invoice-----------------------------//
+                  var invoice = row.Raw_Material_Attachment.Where(w => w.Attachment_Field == Attachment_Field_Name.Invoice && w.Record_Status != Record_Status.Delete).ToList();
+                  if (invoice.Count() == 1)
+                  {
+                     grow.Item.Add(new GridItem()
+                     {
+
+                        Value = Html.AppMultiButton(
+                                 new MvcHtmlString[] {
+                                  Html.AppActionLink("",Url.Action("MaterialDisplayFile", "Material", new {pAttID = row.Raw_Material_Attachment.Where(w => w.Record_Status != Record_Status.Delete ).Select(s => s.Attachment_ID).FirstOrDefault() }),AppColor.none, new {target="_blank", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                     });
+                  }
+                  else
+                  {
+                     if (invoice.Count() == 0 || invoice == null)
+                     {
+                        grow.Item.Add(new GridItem() { });
+                     }
+                     else
+                     {
+                        grow.Item.Add(new GridItem()
+                        {
+
+                           Value = Html.AppMultiButton(
+                                    new MvcHtmlString[] {
+                                  Html.AppButton("" ,AppButtonType.button, AppColor.none,new{onclick="ViewAttachment('"+row.Raw_Material_ID+"','"+Attachment_Field_Name.Invoice+"');", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                        });
+                     }
+                  }
+                  //-------------------------------Packing-----------------------------//
+                  var packing = row.Raw_Material_Attachment.Where(w => w.Attachment_Field == Attachment_Field_Name.Packing && w.Record_Status != Record_Status.Delete).ToList();
+                  if (packing.Count() == 1)
+                  {
+                     grow.Item.Add(new GridItem()
+                     {
+                        Value = Html.AppMultiButton(
+                                 new MvcHtmlString[] {
+                                  Html.AppActionLink("",Url.Action("MaterialDisplayFile", "Material", new {pAttID = row.Raw_Material_Attachment.Where(w => w.Record_Status != Record_Status.Delete ).Select(s => s.Attachment_ID).FirstOrDefault() }),AppColor.none, new {target="_blank", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                     });
+                  }
+                  else
+                  {
+                     if (packing.Count() == 0 || packing == null)
+                     {
+                        grow.Item.Add(new GridItem() { });
+                     }
+                     else
+                     {
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                                    new MvcHtmlString[] {
+                                  Html.AppButton("" ,AppButtonType.button, AppColor.none,new{onclick="ViewAttachment('"+row.Raw_Material_ID+"','"+Attachment_Field_Name.Packing+"');", icon = "fa fa-paperclip fa-flip-horizontal"})
+                           })
+                        });
+                     }
+                  }
+                  rows.Add(grow);
+               }
+               @Html.AppGridData("Materialdatatable", headers, rows)
+            }
+         </div>
+      </section>
+
+      <div id="divAttachmentCOA">
+         @{ Html.RenderPartial("AttachmentDlg", new MaterialFileAttachList()); }
+      </div>
+
+   </div>
+}

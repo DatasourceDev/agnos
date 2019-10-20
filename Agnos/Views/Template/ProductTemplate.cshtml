@@ -1,0 +1,192 @@
+﻿@model Agnos.Models.ProductTemplateViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+
+@{
+   ViewBag.Title = Resource.Assign_Template_To_Product;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+   
+}
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyDetail');
+         $('#btn_Cancel').removeAttr('disabled');
+      }
+
+      if ('@ViewData.ModelState.IsValid' == "False") {
+         $('#modal-producttmp').modal('show');
+      }
+   })
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+
+      $('#Product_Template_ID').val(0);
+      $('#Template_ID').val('');
+      $('#Product_Code').val('');
+      $('#Product_Name').val('');
+      $('#From_No').val('');
+      $('#Revision').val('');
+      $('#Dilution_Tank_No').val('');
+
+      if ($("#Product_Code option").length > 0)
+         $("#Product_Code").get(0).selectedIndex = 0;
+
+      if ($("#Template_ID option").length > 0)
+         $("#Template_ID").get(0).selectedIndex = 0;
+
+      $('#Product_Code').trigger("chosen:updated");
+      $('#Template_ID').trigger("chosen:updated");
+
+      Get_Product_Name_Onchange();
+      $('.validation-error').remove();
+   }
+
+   function EditProductTmp(ptID, pName, pFromNo, pCode, tID, pRevision, pTank) {
+      $('#operation').val('@Operation.U');
+
+      $('#Product_Template_ID').val(ptID);
+      $('#Template_ID').val(tID);
+      $('#Product_Code').val(pCode);
+      $('#From_No').val(pFromNo);
+      $('#Revision').val(pRevision);
+      $('#Dilution_Tank_No').val(pTank);
+
+      $('#Product_Template_ID').trigger("chosen:updated");
+      $('#Product_Code').trigger("chosen:updated");
+      $('#Template_ID').trigger("chosen:updated");
+
+      //Get_Product_Name_Onchange();
+      $('#Product_Name').val(pName);
+      $('.validation-error').remove();
+   }
+
+
+   function Get_Product_Name_Onchange() {
+      $('#Product_Name').val('');
+      //$('#Product_Name').attr('readonly', false);
+      if ($('#Product_Code').val() != null && $('#Product_Code').val() != '') {
+         $.ajax({
+            type: "GET",
+            url: "Get_Product_Name",
+            data: { Product_Code: $('#Product_Code').val() },
+            //dataType: "script"
+         }).done(function (msg) {
+            //alert(msg);
+            $('#appConfig').html(msg);
+         });
+      }
+   }
+
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("ProductTemplate", "Template", new { operation = Operation.D })' + '&Product_Template_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+</script>
+
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Assign_Template_To_Product)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Template_To_Product</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.ProductTemplateList != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+            headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+            headers.Add(new GridHeader() { Column_Name = Resource.Product_Name });
+            headers.Add(new GridHeader() { Column_Name = Resource.From_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Template_Code });
+            headers.Add(new GridHeader() { Column_Name = Resource.Revision_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "240px" });
+            foreach (var row in Model.ProductTemplateList)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = (row.Product_Code != "0" ? row.Product_Code : "") });
+               grow.Item.Add(new GridItem() { Value = row.Product_Name });
+               grow.Item.Add(new GridItem() { Value = row.From_No });
+               grow.Item.Add(new GridItem() { Value = row.Template_Logsheet.Template_Code });
+               grow.Item.Add(new GridItem() { Value = row.Revision });
+               grow.Item.Add(new GridItem()
+               {
+                  Value = Html.AppMultiButton(
+                      new MvcHtmlString[] {
+                          Html.AppActionLink(Resource.Print_Form, Url.Action("ProductTemplatePrint", "Template", new {  operation = Operation.U,pProductTemplateID = row.Product_Template_ID, pTemplateID = row.Template_ID}), AppColor.none,new {Target = ActionTarget._blank}),
+                                    Html.AppButtonModal(Resource.Edit, "modal-producttmp", AppColor.orange, new { onclick="EditProductTmp('"+row.Product_Template_ID+"','"+row.Product_Name+"','"+row.From_No+"','"+row.Product_Code+"','"+row.Template_ID+"','"+row.Revision+"','" + row.Dilution_Tank_No + "');"}),
+                                    Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Product_Template_ID+"');", @disabled = readView }),
+                                    //Html.AppActionLink(Resource.Delete, Url.Action("ProductTemplate","Template", new {operation = Operation.D,Product_Template_ID = row.Product_Template_ID }) , AppColor.danger)
+                            })
+               });
+               rows.Add(grow);
+            }
+            @Html.AppGridData("ptdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-producttmp", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+         }
+      </div>
+   </section>
+</div>
+
+@using (Html.BeginForm("ProductTemplate", "Template", FormMethod.Post, new { role = "form" }))
+{
+    
+   @Html.AntiForgeryToken()
+   @Html.HiddenFor(m => m.Modify)
+   @Html.HiddenFor(m => m.operation)
+   @Html.HiddenFor(m => m.Product_Template_ID)
+   <div id="appConfig"></div>
+   <div class="modal fade" id="modal-producttmp" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" id="divModifyDetail">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title"><strong>@Resource.Assign_Template_To_Product</strong></h4>
+            </div>
+            <div class="modal-body">
+               @Html.AppLabelFor(m => m.Product_Code)
+               @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new
+               {
+                  onchange = "Get_Product_Name_Onchange()"
+               })
+               @Html.AppLabelFor(m => m.Product_Name)
+               @Html.AppTextboxFor(m => m.Product_Name, Model.Product_Name)
+
+               @Html.AppLabelFor(m => m.From_No)
+               @Html.AppTextboxFor(m => m.From_No, Model.From_No)
+
+               @Html.AppLabelFor(m => m.Template_ID)
+               @Html.AppDropDownListFor(m => m.Template_ID, Model.cTmplist)
+
+               @Html.AppLabelFor(m => m.Revision)
+               @Html.AppTextboxFor(m => m.Revision, Model.Revision)
+
+               @Html.AppLabelFor(m => m.Dilution_Tank_No)
+               @Html.AppTextboxFor(m => m.Dilution_Tank_No, Model.Dilution_Tank_No)
+            </div>
+            <div class="modal-footer">
+               @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel", @data_dismiss = "modal", @aria_hidden = true })
+               @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary)
+            </div>
+         </div>
+      </div>
+   </div>
+}

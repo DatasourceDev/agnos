@@ -1,0 +1,683 @@
+﻿@model AgnosCMS.Models.CMSSetupViewModel
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using AppFramework.Control;
+@using System.Text;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.CMS_Setup;
+   var read = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      read = true;
+   }
+}
+
+<div class="main">
+   @Html.AppPageHeader(Resource.CMS_Setup)
+   <section class="tile">
+      <div class="tile-widget nopadding color green rounded-top-corners">
+         <ul class="nav nav-tabs tabdrop">
+            <li id="li-format"><a href="#format-tab" data-toggle="tab">@Resource.Formatting</a></li>
+            <li id="li-drumTypes"><a href="#drumTypes-tab" data-toggle="tab">@Resource.Drum_Types</a></li>
+            <li id="li-drumControl"><a href="#drumControl-tab" data-toggle="tab">@Resource.Drum_Control</a></li>
+            <li id="li-skipPurging"><a href="#skipPurging-tab" data-toggle="tab">@Resource.Skip_Purging</a></li>
+            <li id="li-chargingControl"><a href="#chargingControl-tab" data-toggle="tab">@Resource.Charging_Control</a></li>
+            <li id="li-fillingStations"><a href="#fillingStations-tab" data-toggle="tab">@Resource.Filling_Stations</a></li>
+            <li id="li-product"><a href="#product-tab" data-toggle="tab">@Resource.Product_List</a></li>
+         </ul>
+      </div>
+      <div class="tile-body tab-content rounded-bottom-corners">
+         <div id="format-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "format")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Formatlist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Format_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Lot_No_Length });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Product_Code_Length });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Formatlist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Format_Code });
+                        grow.Item.Add(new GridItem() { Value = row.Lot_No_Length });
+                        grow.Item.Add(new GridItem() { Value = row.Product_Code_Length });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-format", AppColor.orange, new { onclick="EditFormat('"+row.Format_ID+"','"+row.Format_Code+"','"+row.Lot_No_Length+"','"+row.Product_Code_Length+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "format", operation = Operation.D,Format_ID = row.Format_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("fdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-format", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="drumTypes-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "drumTypes")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Drum_Typelist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Drum_Types });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Drum_Typelist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Drum_Type });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-drumTypes", AppColor.orange, new { onclick="EditDrumType('"+row.Drum_Type_ID+"','"+row.Drum_Type+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "drumTypes", operation = Operation.D,Drum_Type_ID = row.Drum_Type_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("ddatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-drumTypes", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="skipPurging-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "skipPurging")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Skip_Purginglist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Drum_Types });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Skip_Purginglist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                        grow.Item.Add(new GridItem() { Value = (row.CMS_Drum_Type != null ? row.CMS_Drum_Type.Drum_Type : "") });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-skipPurging", AppColor.orange, new { onclick="EditSkipPurging('"+row.Skip_Purging_ID+"','"+row.Product_Code+"','"+row.Drum_Type_ID+"');" }),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "skipPurging", operation = Operation.D,Skip_Purging_ID = row.Skip_Purging_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("sdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-skipPurging", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="chargingControl-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "chargingControl")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Charging_Controllist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Drum_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Max_Of_Charges });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Charging_Controllist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Drum_Code });
+                        grow.Item.Add(new GridItem() { Value = row.Max_Of_Change });
+                        grow.Item.Add(new GridItem() { Value = row.Action });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-chargingControl", AppColor.orange, new { onclick="EditCharging_Control('"+row.Charging_Control_ID+"','"+row.Drum_Code+"','"+row.Max_Of_Change+"','"+row.Action+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "chargingControl", operation = Operation.D,Charging_Control_ID = row.Charging_Control_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("cdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-chargingControl", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="fillingStations-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "fillingStations")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Filling_Stationlist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Station_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Filling_Stationlist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Station_Code });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-fillingStations", AppColor.orange, new { onclick="EditFilling_Station('"+row.Filling_Station_ID+"','"+row.Station_Code+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "fillingStations", operation = Operation.D,Filling_Station_ID = row.Filling_Station_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("ffdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-fillingStations", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="product-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "product")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Productlist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Station_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Productlist)
+                     {
+                        //ComboRow prod = new ComboRow();
+                        //if (Model.cProduct_Codelist != null)
+                        //{
+                        //    prod = Model.cProduct_Codelist.Where(w => w.Value == row.Product_Code).FirstOrDefault();
+                        //    if (prod == null) { prod = new ComboRow(); }
+                        //}
+
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = (row.CMS_Filling_Station != null ? row.CMS_Filling_Station.Station_Code : "") });
+                        grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-product", AppColor.orange, new { onclick="EditProduct('"+row.CMS_Product_ID+"','"+row.Filling_Station_ID+ "','" + row.Product_Code +"','"+row.Product_Name+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "product", operation = Operation.D,CMS_Product_ID = row.CMS_Product_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+                     @Html.AppGridData("pdetaildatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-product", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+                  }
+               </div>
+            </section>
+         </div>
+
+         <div id="drumControl-tab" class="tab-pane fade in ">
+            @if (Model.tabAction == "drumControl")
+            {
+               @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+            }
+            <section class="tile ">
+               <div class="tile-body">
+                  @if (Model.CMS_Drum_Controllist != null)
+                  {
+                     var headers = new List<GridHeader>();
+                     var rows = new List<GridRow>();
+
+                     headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Drum_Types });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Running_Number });
+                     headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+
+                     var i = 0;
+                     foreach (var row in Model.CMS_Drum_Controllist)
+                     {
+                        var grow = new GridRow();
+                        grow.Item.Add(new GridItem() { Value = (i + 1) });
+                        grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                        grow.Item.Add(new GridItem() { Value = (row.CMS_Drum_Type != null ? row.CMS_Drum_Type.Drum_Type : "") });
+                        grow.Item.Add(new GridItem() { Value = row.Running_Number });
+                        grow.Item.Add(new GridItem()
+                        {
+                           Value = Html.AppMultiButton(
+                               new MvcHtmlString[] {
+                                                Html.AppButtonModal(Resource.Edit, "modal-drumControl", AppColor.orange, new { onclick="EditDrum_Control('"+row.Drum_Control_ID+"','"+ row.Product_Code +"','"+ row.Drum_Type_ID +"','"+row.Running_Number+"');"}),
+                                                Html.AppActionLink(Resource.Delete, Url.Action("CMSSetup","CMS", new {tabAction = "drumControl", operation = Operation.D,Drum_Control_ID = row.Drum_Control_ID }) , AppColor.danger,new { @disabled = read })
+                                        })
+                        });
+                        rows.Add(grow);
+                        i++;
+                     }
+
+                     @Html.AppGridData("dcdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-drumControl", AppColor.greensea, new { onclick = "ControlClear();", @disabled = read }))
+
+                  }
+               </div>
+            </section>
+         </div>
+      </div>
+   </section>
+   @using (Html.BeginForm("CMSSetup", "CMS", FormMethod.Post, new { role = "form" }))
+   {
+      @Html.HiddenFor(m => m.Format_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      <div class="modal fade" id="modal-format" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyFormat">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Formatting</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Format_Code_Format)
+                  @Html.AppTextboxFor(m => m.Format_Code_Format)
+                  @Html.AppLabelFor(m => m.Lot_No_Length_Format)
+                  @Html.AppTextboxFor(m => m.Lot_No_Length_Format)
+                  @Html.AppLabelFor(m => m.Product_Code_Length_Format)
+                  @Html.AppTextboxFor(m => m.Product_Code_Length_Format)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_format", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "format" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.Drum_Type_ID)
+      <div class="modal fade" id="modal-drumTypes" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyDrumTypes">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Drum_Types</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Drum_Type_Drum)
+                  @Html.AppTextboxFor(m => m.Drum_Type_Drum)
+
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_drumTypes", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "drumTypes" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.Skip_Purging_ID)
+      <div class="modal fade" id="modal-skipPurging" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifySkipPurging">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Skip_Purging</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Product_Code_Skip)
+                  @Html.AppDropDownListFor(m => m.Product_Code_Skip, Model.cProduct_ByCodelist)
+                  @Html.AppLabelFor(m => m.Drum_Type_ID_Skip)
+                  @Html.AppDropDownListFor(m => m.Drum_Type_ID_Skip, Model.cDrum_Typelist)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_skipPurging", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "skipPurging" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.Charging_Control_ID)
+      <div class="modal fade" id="modal-chargingControl" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyChargingControl">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Charging_Control</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Drum_Code_Charging)
+                  @Html.AppTextboxFor(m => m.Drum_Code_Charging)
+                  @Html.AppLabelFor(m => m.Max_Of_Change_Charging)
+                  @Html.AppTextboxFor(m => m.Max_Of_Change_Charging)
+                  @Html.AppLabelFor(m => m.Action_Charging)
+                  @Html.AppDropDownListFor(m => m.Action_Charging, Model.cActionlist)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_chargingControl", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "chargingControl" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.Filling_Station_ID)
+      <div class="modal fade" id="modal-fillingStations" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyFillingStations">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Filling_Stations</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Station_Code_Filling)
+                  @Html.AppTextboxFor(m => m.Station_Code_Filling)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_fillingStations", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "fillingStations" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.CMS_Product_ID)
+      <div class="modal fade" id="modal-product" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyProduct">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Product_List</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Filling_Station_ID_Product)
+                  @Html.AppDropDownListFor(m => m.Filling_Station_ID_Product, Model.cStationlist)
+
+                  @Html.AppLabelFor(m => m.Product_Code)
+                  @Html.AppTextboxFor(m => m.Product_Code)
+
+                  @Html.AppLabelFor(m => m.Product_Name)
+                  @Html.AppTextboxFor(m => m.Product_Name)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_product", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "product" })
+               </div>
+            </div>
+         </div>
+      </div>
+
+      @Html.HiddenFor(m => m.Drum_Control_ID)
+      <div class="modal fade" id="modal-drumControl" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog" id="divModifyDrumControl">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h4 class="modal-title"><strong>@Resource.Drum_Control</strong></h4>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m => m.Product_Code_Control)
+                  @Html.AppDropDownListFor(m => m.Product_Code_Control, Model.cProduct_ByCodelist)
+
+                  @Html.AppLabelFor(m => m.Drum_Type_ID_Control)
+                  @Html.AppDropDownListFor(m => m.Drum_Type_ID_Control, Model.cDrum_Typelist)
+
+                  @Html.AppLabelFor(m => m.Running_Number_Control)
+                  @Html.AppTextboxFor(m => m.Running_Number_Control, new { placeholder = "1 - 20" })
+
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_drumControl", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "drumControl" })
+               </div>
+            </div>
+         </div>
+      </div>
+   }
+
+</div>
+
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@read' == "True") {
+         Disable('divModifyProduct');
+         Disable('divModifyFillingStations');
+         Disable('divModifyChargingControl');
+         Disable('divModifySkipPurging');
+         Disable('divModifyDrumTypes');
+         Disable('divModifyFormat');
+         Disable('divModifyDrumControl');
+
+         $('#btn_Cancel_product').removeAttr('disabled');
+         $('#btn_Cancel_fillingStations').removeAttr('disabled');
+         $('#btn_Cancel_chargingControl').removeAttr('disabled');
+         $('#btn_Cancel_skipPurging').removeAttr('disabled');
+         $('#btn_Cancel_drumTypes').removeAttr('disabled');
+         $('#btn_Cancel_format').removeAttr('disabled');
+         $('#btn_Cancel_drumControl').removeAttr('disabled');
+      }
+
+      var module = '@Model.tabAction';
+      if ('@string.IsNullOrEmpty(Model.tabAction)' == "True") {
+         module = "format";
+      }
+      var liID = "li-" + module;
+      var tabID = module + "-tab";
+      $("#" + liID).addClass("active");
+      $("#" + tabID).addClass("active");
+
+      if ('@ViewData.ModelState.IsValid'.toLowerCase() == "false") {
+         if ('@Model.tabAction' == "format") {
+            $('#modal-format').modal('show');
+         }
+         else if ('@Model.tabAction' == "drumTypes") {
+            $('#modal-drumTypes').modal('show');
+         }
+         else if ('@Model.tabAction' == "skipPurging") {
+            $('#modal-skipPurging').modal('show');
+         }
+         else if ('@Model.tabAction' == "chargingControl") {
+            $('#modal-chargingControl').modal('show');
+         }
+         else if ('@Model.tabAction' == "fillingStations") {
+            $('#modal-fillingStations').modal('show');
+         }
+         else if ('@Model.tabAction' == "product") {
+            $('#modal-product').modal('show');
+         } else if ('@Model.tabAction' == "drumControl") {
+            $('#modal-drumControl').modal('show');
+         }
+      }
+   })
+
+   function EditFormat(fID, fFormatCode, fLotNoLength, fProductCodeLength) {
+      $('#operation').val('@Operation.U');
+      $('#Format_ID').val(fID);
+      $('#Format_Code_Format').val(fFormatCode);
+      $('#Lot_No_Length_Format').val(fLotNoLength);
+      $('#Product_Code_Length_Format').val(fProductCodeLength);
+
+      $('.validation-error').remove();
+   }
+
+   function EditDrumType(dID, dDrum_Type) {
+      $('#operation').val('@Operation.U');
+      $('#Drum_Type_ID').val(dID);
+      $('#Drum_Type_Drum').val(dDrum_Type);
+
+      $('.validation-error').remove();
+   }
+
+   function EditSkipPurging(sID, sProduct_Code, sDrum_Type_ID) {
+      $('#operation').val('@Operation.U');
+      $('#Skip_Purging_ID').val(sID);
+      $('#Product_Code_Skip').val(sProduct_Code);
+      $('#Drum_Type_ID_Skip').val(sDrum_Type_ID);
+      $('#Product_Code_Skip').trigger("chosen:updated");
+      $('#Drum_Type_ID_Skip').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function EditCharging_Control(sID, sDrum_Code, sMax_Of_Change, sAction) {
+      $('#operation').val('@Operation.U');
+      $('#Charging_Control_ID').val(sID);
+      $('#Drum_Code_Charging').val(sDrum_Code);
+      $('#Max_Of_Change_Charging').val(sMax_Of_Change);
+      $('#Action_Charging').val(sAction);
+      $('#Action_Charging').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function EditFilling_Station(fID, fProduct_Code) {
+      $('#operation').val('@Operation.U');
+      $('#Filling_Station_ID').val(fID);
+      $('#Station_Code_Filling').val(fProduct_Code);
+
+      $('.validation-error').remove();
+   }
+
+   function EditProduct(pID, pFilling_Station_ID, pProduct_Code, pProduct_Name) {
+      $('#operation').val('@Operation.U');
+      $('#CMS_Product_ID').val(pID);
+      $('#Filling_Station_ID_Product').val(pFilling_Station_ID);
+      $('#Product_Code').val(pProduct_Code);
+      $('#Product_Name').val(pProduct_Name);
+      $('#Filling_Station_ID_Product').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function EditDrum_Control(sID, sProduct_Code, sDrum_Type_ID, sRunning_Number) {
+      $('#operation').val('@Operation.U');
+      $('#Drum_Control_ID').val(sID);
+      $('#Product_Code_Control').val(sProduct_Code);
+      $('#Drum_Type_ID_Control').val(sDrum_Type_ID);
+      $('#Running_Number_Control').val(sRunning_Number);
+      $('#Product_Code_Control').trigger("chosen:updated");
+      $('#Drum_Type_ID_Control').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+
+   }
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+
+      $('#Format_ID').val(0);
+      $('#Format_Code_Format').val('');
+      $('#Lot_No_Length_Format').val('');
+      $('#Product_Code_Length_Format').val('');
+
+      $('#Drum_Type_ID').val(0);
+      $('#Drum_Type_Drum').val('');
+
+      $('#Skip_Purging_ID').val(0);
+      $('#Product_Code_Skip').val('');
+      $('#Drum_Type_ID_Skip').val('');
+
+      $('#Charging_Control_ID').val(0);
+      $('#Drum_Code_Charging').val('');
+      $('#Max_Of_Change_Charging').val('');
+      $('#Action_Charging').val('');
+
+      $('#Filling_Station_ID').val(0);
+      $('#Station_Code_Filling').val('');
+
+      $('#CMS_Product_ID').val(0);
+      $('#Product_Code').val('');
+      $('#Product_Name').val('');
+
+      $('#Drum_Control_ID').val(0);
+      $('#Product_Code_Control').val('');
+      $('#Drum_Type_ID_Control').val('');
+      $('#Running_Number_Control').val('');
+
+      if ($("#Product_Code_Skip option").length > 0)
+         $("#Product_Code_Skip").get(0).selectedIndex = 0;
+
+      if ($("#Drum_Type_ID_Skip option").length > 0)
+         $("#Drum_Type_ID_Skip").get(0).selectedIndex = 0;
+
+      if ($("#Action_Charging option").length > 0)
+         $("#Action_Charging").get(0).selectedIndex = 0
+
+      if ($("#Filling_Station_ID_Product option").length > 0)
+         $("#Filling_Station_ID_Product").get(0).selectedIndex = 0
+
+      if ($("#Product_Code_Control option").length > 0)
+         $("#Product_Code_Control").get(0).selectedIndex = 0;
+
+      if ($("#Drum_Type_ID_Control option").length > 0)
+         $("#Drum_Type_ID_Control").get(0).selectedIndex = 0;
+
+      $('#Product_Code_Skip').trigger("chosen:updated");
+      $('#Drum_Type_ID_Skip').trigger("chosen:updated");
+      $('#Action_Charging').trigger("chosen:updated");
+      $('#Filling_Station_ID_Product').trigger("chosen:updated");
+      $('#Product_Code_Control').trigger("chosen:updated");
+      $('#Drum_Type_ID_Control').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+</script>
+

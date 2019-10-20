@@ -1,0 +1,132 @@
+﻿@model Agnos.Models.MaterialInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+
+<script type="text/javascript">
+    $(function () {
+        $(document).on('change', '.btn-file :file', function () {
+            var input = $(this),
+            numFiles = input.get(0).files ? input.get(0).files.length : 1,
+            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+            input.trigger('fileselect', [numFiles, label]);
+        });
+
+        $('.btn-file :file').on('fileselect', function (event, numFiles, label) {
+            var index = $('#uploadIndex').val();
+            var filename = $('#uploadfile' + index).val();
+            if (filename != '') {
+                var ext = '';
+                var k = filename.lastIndexOf('.');
+                if (k >= 0) {
+                    ext = filename.substring(k + 1).toLowerCase();
+                }
+                if (ext != 'jpg' && ext != 'jpeg' && ext != 'png' && ext != 'gif' && ext != 'csv' &&
+                     ext != 'txt' && ext != 'pdf' && ext != 'xls' & ext != 'xlsx' && ext != 'doc' && ext != 'docx') {
+                    $('#uploadfile' + index).after($('#uploadfile' + index).clone(true)).remove();
+                    $('#uploadfile' + index).parents('.input-group').find(':text').val('');
+                    alert('Please upload .jpg, .jpeg, .png, .gif, .txt, .pdf, .xls, .xlsx, .doc or .docx');
+                    return;
+                }
+                var fsize = $('#uploadfile' + index)[0].files[0].size;
+                if (fsize > 2097150) {
+                    alert('Please upload file size is less than 2 MB');
+                    $('#uploadfile' + index).after($('#uploadfile' + index).clone(true)).remove();
+                    $('#uploadfile' + index).parents('.input-group').find(':text').val('');
+                    return false;
+                }
+                var input = $(this).parents('.input-group').find(':text'),
+                    log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+                console.log(log);
+                if (input.length) {
+                    input.val(log);
+                } else {
+                    if (log) alert(log);
+                }
+            }
+        });
+
+    });
+
+    function Open_Upload_Onclick(index) {
+        $('#uploadIndex').val(index);
+        $('#uploadfile' + index).after($('#uploadfile' + index).clone(true)).remove();
+        $('#uploadfile' + index).parents('.input-group').find(':text').val('');
+        $('#uploadfile' + index).val('');
+    }
+    function Upload_Onclick(index)
+    {
+        var filename = $('#uploadfile' + index).val();
+        if(filename != null)
+        {         
+            var $f = document.createElement("input");
+            $f.setAttribute("type", "file");
+            $f.setAttribute("name", "files");
+            $f.setAttribute("style", "display:none");
+            $f.setAttribute("id", 'file' + index);
+          
+            var $fileInput = $('#uploadfile' + index);
+            $fileInput.replaceWith($f);
+
+            $('#divUpload' + index).append($f);
+
+            var alink = '<a name="' + filename + '" class="color-blue" href="@Url.Action("DisplayAttactment", "Material")" id="aABC" target="_blank">' + filename + '</a><br/>';
+            $('#divUpload' + index).append(alink);
+            $('#modal-upload' + index).modal('hide');
+        }
+    }
+</script>
+<input type="hidden" id="uploadIndex" />
+<div class="modal fade" id="modal-upload1" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><strong>Upload Document</strong></h4>
+            </div>
+            <div class="modal-body">
+                @Html.AppFileUpload("uploadfile1")
+            </div>
+            <div class="modal-footer">
+                @Html.AppButton(Resource.Close, AppButtonType.button, AppColor.none, new { @data_dismiss = "modal", @aria_hidden = "true" })
+                @Html.AppButton(Resource.Btn_Upload, AppButtonType.button, AppColor.blue, new { onclick = "Upload_Onclick(1)" })
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modal-upload2" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><strong>Upload Document</strong></h4>
+            </div>
+            <div class="modal-body">
+                @Html.AppFileUpload("uploadfile2")
+            </div>
+            <div class="modal-footer">
+                @Html.AppButton(Resource.Close, AppButtonType.button, AppColor.none, new { @data_dismiss = "modal", @aria_hidden = "true" })
+                @Html.AppButton(Resource.Btn_Upload, AppButtonType.button, AppColor.blue, new { onclick = "Upload_Onclick(2)" })
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modal-upload3" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><strong>Upload Document</strong></h4>
+            </div>
+            <div class="modal-body">
+                @Html.AppFileUpload("uploadfile3")
+            </div>
+            <div class="modal-footer">
+                @Html.AppButton(Resource.Close, AppButtonType.button, AppColor.none, new { @data_dismiss = "modal", @aria_hidden = "true" })
+                @Html.AppButton(Resource.Btn_Upload, AppButtonType.button, AppColor.blue, new { onclick = "Upload_Onclick(3)" })
+            </div>
+
+        </div>
+    </div>
+</div>

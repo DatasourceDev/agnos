@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BF1C6E98-87DA-4C1D-8855-8A1BEA18B39D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AgnosModel</RootNamespace>
+    <AssemblyName>AgnosModel</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Microsoft.AspNet.Identity.Core.1.0.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Microsoft.AspNet.Identity.EntityFramework.1.0.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Microsoft.AspNet.Identity.Owin.1.0.0\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Administration.7.0.0.0\lib\net20\Microsoft.Web.Administration.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AgnosConst.cs" />
+    <Compile Include="AppSetting.cs" />
+    <Compile Include="CriteriaBase.cs" />
+    <Compile Include="Models\Activation_Link.cs" />
+    <Compile Include="Models\Agnos2DBContext.cs" />
+    <Compile Include="Models\AgnosDBContext.cs" />
+    <Compile Include="Models\AspNetRole.cs" />
+    <Compile Include="Models\AspNetUser.cs" />
+    <Compile Include="Models\AspNetUserClaim.cs" />
+    <Compile Include="Models\AspNetUserLogin.cs" />
+    <Compile Include="Models\AspNetUserRole.cs" />
+    <Compile Include="Models\CMS_Charge.cs" />
+    <Compile Include="Models\CMS_Charging_Control.cs" />
+    <Compile Include="Models\CMS_Delivery.cs" />
+    <Compile Include="Models\CMS_Delivery_Detail.cs" />
+    <Compile Include="Models\CMS_Drum_Control.cs" />
+    <Compile Include="Models\CMS_Drum_Type.cs" />
+    <Compile Include="Models\CMS_Filling_Station.cs" />
+    <Compile Include="Models\CMS_Format.cs" />
+    <Compile Include="Models\CMS_Product.cs" />
+    <Compile Include="Models\CMS_Purge.cs" />
+    <Compile Include="Models\CMS_Skip_Purging.cs" />
+    <Compile Include="Models\Global_Lookup_Data.cs" />
+    <Compile Include="Models\Global_Lookup_Def.cs" />
+    <Compile Include="Models\Logsheet.cs" />
+    <Compile Include="Models\Logsheet_Field.cs" />
+    <Compile Include="Models\Logsheet_Group.cs" />
+    <Compile Include="Models\Logsheet_Header.cs" />
+    <Compile Include="Models\Logsheet_Map.cs" />
+    <Compile Include="Models\Logsheet_Product_Form.cs" />
+    <Compile Include="Models\Lot_Number.cs" />
+    <Compile Include="Models\Mapping\Activation_LinkMap.cs" />
+    <Compile Include="Models\Mapping\AspNetRoleMap.cs" />
+    <Compile Include="Models\Mapping\AspNetUserClaimMap.cs" />
+    <Compile Include="Models\Mapping\AspNetUserLoginMap.cs" />
+    <Compile Include="Models\Mapping\AspNetUserMap.cs" />
+    <Compile Include="Models\Mapping\AspNetUserRoleMap.cs" />
+    <Compile Include="Models\Mapping\CMS_ChargeMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Charging_ControlMap.cs" />
+    <Compile Include="Models\Mapping\CMS_DeliveryMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Delivery_DetailMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Drum_ControlMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Drum_TypeMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Filling_StationMap.cs" />
+    <Compile Include="Models\Mapping\CMS_FormatMap.cs" />
+    <Compile Include="Models\Mapping\CMS_ProductMap.cs" />
+    <Compile Include="Models\Mapping\CMS_PurgeMap.cs" />
+    <Compile Include="Models\Mapping\CMS_Skip_PurgingMap.cs" />
+    <Compile Include="Models\Mapping\Global_Lookup_DataMap.cs" />
+    <Compile Include="Models\Mapping\Global_Lookup_DefMap.cs" />
+    <Compile Include="Models\Mapping\LogsheetMap.cs" />
+    <Compile Include="Models\Mapping\Logsheet_FieldMap.cs" />
+    <Compile Include="Models\Mapping\Logsheet_GroupMap.cs" />
+    <Compile Include="Models\Mapping\Logsheet_HeaderMap.cs" />
+    <Compile Include="Models\Mapping\Logsheet_MapMap.cs" />
+    <Compile Include="Models\Mapping\Logsheet_Product_FormMap.cs" />
+    <Compile Include="Models\Mapping\Lot_NumberMap.cs" />
+    <Compile Include="Models\Mapping\Material_RejectMap.cs" />
+    <Compile Include="Models\Mapping\Material_Reject_FormMap.cs" />
+    <Compile Include="Models\Mapping\Material_WithdrawMap.cs" />
+    <Compile Include="Models\Mapping\PageMap.cs" />
+    <Compile Include="Models\Mapping\Page_RoleMap.cs" />
+    <Compile Include="Models\Mapping\Product_MappingMap.cs" />
+    <Compile Include="Models\Mapping\Product_TemplateMap.cs" />
+    <Compile Include="Models\Mapping\Raw_MaterialMap.cs" />
+    <Compile Include="Models\Mapping\Raw_Material_AttachmentMap.cs" />
+    <Compile Include="Models\Mapping\Raw_Material_FormMap.cs" />
+    <Compile Include="Models\Mapping\RoleMap.cs" />
+    <Compile Include="Models\Mapping\Running_Number_ConfigMap.cs" />
+    <Compile Include="Models\Mapping\Template_FieldMap.cs" />
+    <Compile Include="Models\Mapping\Template_GroupMap.cs" />
+    <Compile Include="Models\Mapping\Template_HeaderMap.cs" />
+    <Compile Include="Models\Mapping\Template_LogsheetMap.cs" />
+    <Compile Include="Models\Mapping\Tmp_Log_FieldMap.cs" />
+    <Compile Include="Models\Mapping\Tmp_Log_GroupMap.cs" />
+    <Compile Include="Models\Mapping\Tmp_Log_HeaderMap.cs" />
+    <Compile Include="Models\Mapping\Tmp_Log_MapMap.cs" />
+    <Compile Include="Models\Mapping\Upload_AttachmentMap.cs" />
+    <Compile Include="Models\Mapping\User_ProfileMap.cs" />
+    <Compile Include="Models\Material_Reject.cs" />
+    <Compile Include="Models\Material_Reject_Form.cs" />
+    <Compile Include="Models\Material_Withdraw.cs" />
+    <Compile Include="Models\Page.cs" />
+    <Compile Include="Models\Page_Role.cs" />
+    <Compile Include="Models\Product_Mapping.cs" />
+    <Compile Include="Models\Product_Template.cs" />
+    <Compile Include="Models\Raw_Material.cs" />
+    <Compile Include="Models\Raw_Material_Attachment.cs" />
+    <Compile Include="Models\Raw_Material_Form.cs" />
+    <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\Running_Number_Config.cs" />
+    <Compile Include="Models\SBSDBContext-temp.cs" />
+    <Compile Include="Models\Template_Field.cs" />
+    <Compile Include="Models\Template_Group.cs" />
+    <Compile Include="Models\Template_Header.cs" />
+    <Compile Include="Models\Template_Logsheet.cs" />
+    <Compile Include="Models\Tmp_Log_Field.cs" />
+    <Compile Include="Models\Tmp_Log_Group.cs" />
+    <Compile Include="Models\Tmp_Log_Header.cs" />
+    <Compile Include="Models\Tmp_Log_Map.cs" />
+    <Compile Include="Models\Upload_Attachment.cs" />
+    <Compile Include="Models\User_Profile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\CMSService.cs" />
+    <Compile Include="Service\ComboService.cs" />
+    <Compile Include="Service\ExchequerService.cs" />
+    <Compile Include="Service\GlobalLookupService.cs" />
+    <Compile Include="Service\IdentityModels.cs" />
+    <Compile Include="Service\MobileService.cs" />
+    <Compile Include="Service\RoleService.cs" />
+    <Compile Include="Service\TemplateService.cs" />
+    <Compile Include="Service\MaterialService.cs" />
+    <Compile Include="Service\ServiceBase.cs" />
+    <Compile Include="Service\ServiceResult.cs" />
+    <Compile Include="Service\StoredProcedure.cs" />
+    <Compile Include="Service\UserService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="lib\Microsoft.AspNet.Identity.Core.1.0.0\Microsoft.AspNet.Identity.Core.1.0.0.nupkg" />
+    <None Include="lib\Microsoft.AspNet.Identity.Core.1.0.0\Microsoft.AspNet.Identity.Core.1.0.0.nuspec" />
+    <None Include="lib\Microsoft.AspNet.Identity.EntityFramework.1.0.0\Microsoft.AspNet.Identity.EntityFramework.1.0.0.nupkg" />
+    <None Include="lib\Microsoft.AspNet.Identity.EntityFramework.1.0.0\Microsoft.AspNet.Identity.EntityFramework.1.0.0.nuspec" />
+    <None Include="lib\Microsoft.AspNet.Identity.Owin.1.0.0\Microsoft.AspNet.Identity.Owin.1.0.0.nupkg" />
+    <None Include="lib\Microsoft.AspNet.Identity.Owin.1.0.0\Microsoft.AspNet.Identity.Owin.1.0.0.nuspec" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\Microsoft.AspNet.Identity.Core.1.0.0\lib\net45\Microsoft.AspNet.Identity.Core.dll" />
+    <Content Include="lib\Microsoft.AspNet.Identity.Core.1.0.0\lib\net45\Microsoft.AspNet.Identity.Core.xml" />
+    <Content Include="lib\Microsoft.AspNet.Identity.EntityFramework.1.0.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll" />
+    <Content Include="lib\Microsoft.AspNet.Identity.EntityFramework.1.0.0\lib\net45\Microsoft.AspNet.Identity.EntityFramework.xml" />
+    <Content Include="lib\Microsoft.AspNet.Identity.Owin.1.0.0\lib\net45\Microsoft.AspNet.Identity.Owin.dll" />
+    <Content Include="lib\Microsoft.AspNet.Identity.Owin.1.0.0\lib\net45\Microsoft.AspNet.Identity.Owin.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppFramework\AppFramework.csproj">
+      <Project>{73b656db-d704-4fa4-b0a2-7351ab904168}</Project>
+      <Name>AppFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SBSResourceAPI\SBSResourceAPI.csproj">
+      <Project>{91e83929-09e3-49c5-b3cb-b08896334222}</Project>
+      <Name>SBSResourceAPI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Enterprise01">
+      <Guid>{B7D657C0-37AB-11D4-A992-0050DA3DF9AD}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

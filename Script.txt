@@ -1,0 +1,708 @@
+CREATE TABLE [dbo].[Template_Logsheet_Header] (
+[Template_Header_ID] int IDENTITY(1, 1) NOT NULL,
+[Template_Group_ID] int NULL,
+[Header_ID] int NULL,
+[Header_Order] int NULL,
+CONSTRAINT [pk_Template_Logsheet_Group_Header] PRIMARY KEY CLUSTERED ([Template_Header_ID] ASC),
+CONSTRAINT [fk_Template_Logsheet_Group_Header_1] FOREIGN KEY ([Template_Group_ID]) REFERENCES [dbo].[Template_Logsheet_Group] ( [Template_Group_ID] ),
+CONSTRAINT [fk_Template_Logsheet_Group_Header_2] FOREIGN KEY ([Header_ID]) REFERENCES [dbo].[Template_Header] ( [Header_ID] )
+)
+
+CREATE TABLE [dbo].[Template_Logsheet_Field] (
+[Template_Field_ID] int IDENTITY(1, 1) NOT NULL,
+[Template_Header_ID] int NULL,
+[Field_ID] int NULL,
+[Field_Order] int NULL,
+[Option_Selected] varchar(50) NULL,
+[Option_Text] varchar(300) NULL,
+[Option_Data_Type] varchar(150) NULL,
+[Option_Field_From] varchar(150) NULL,
+[Option_Range_From] decimal(18, 2) NULL,
+[Option_Range_To] decimal(18, 2) NULL,
+[Lot_No] varchar(150) NULL,
+CONSTRAINT [pk_Template_Logsheet_Field] PRIMARY KEY CLUSTERED ([Template_Field_ID] ASC),
+CONSTRAINT [fk_Template_Logsheet_Field_1] FOREIGN KEY ([Template_Header_ID]) REFERENCES [dbo].[Template_Logsheet_Header] ( [Template_Header_ID] ),
+CONSTRAINT [fk_Template_Logsheet_Field_2] FOREIGN KEY ([Field_ID]) REFERENCES [dbo].[Template_Field] ( [Field_ID] )
+)
+
+CREATE TABLE [dbo].[Logsheet_Header] (
+[Logsheet_Header_ID] int IDENTITY(1, 1) NOT NULL,
+[Logsheet_Group_ID] int NULL,
+[Header_ID] int NULL,
+CONSTRAINT [pk_Logsheet_Header] PRIMARY KEY CLUSTERED ([Logsheet_Header_ID] ASC),
+CONSTRAINT [fk_Logsheet_Header_1] FOREIGN KEY ([Logsheet_Group_ID]) REFERENCES [dbo].[Logsheet_Group] ( [Logsheet_Group_ID] ),
+CONSTRAINT [fk_Logsheet_Header_2] FOREIGN KEY ([Header_ID]) REFERENCES [dbo].[Template_Header] ( [Header_ID] )
+)
+
+CREATE TABLE [dbo].[Logsheet_Field] (
+[Logsheet_Field_ID] int IDENTITY(1, 1) NOT NULL,
+[Logsheet_Group_ID] int NULL,
+[Field_ID] int NULL,
+[Option_Selected] varchar(50) NULL,
+[Text_Display] varchar(500) NULL,
+CONSTRAINT [pk_Logsheet_Field] PRIMARY KEY CLUSTERED ([Logsheet_Field_ID] ASC),
+CONSTRAINT [fk_Logsheet_Field_1] FOREIGN KEY ([Logsheet_Header_ID]) REFERENCES [dbo].[Logsheet_Header] ( [Logsheet_Header_ID] ),
+CONSTRAINT [fk_Logsheet_Field_2] FOREIGN KEY ([Field_ID]) REFERENCES [dbo].[Template_Field] ( [Field_ID] )
+)
+
+
+/*----------------------------------- Added by sun19-02-2016----------------------------------------*/
+GO
+CREATE TABLE [dbo].[CMS_Format] 
+		([Format_ID] 			    INT IDENTITY (1, 1) NOT NULL,
+        [Format_Code]				VARCHAR (150)   NULL,
+		[Lot_No_Length]				INT             NULL,
+		[Product_Code_Length]		INT             NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Format] PRIMARY KEY CLUSTERED ([Format_ID] ASC))
+
+CREATE TABLE [dbo].[CMS_Drum_Type] 
+		([Drum_Type_ID] 			INT IDENTITY (1, 1) NOT NULL,
+        [Drum_Type]					VARCHAR (150)   NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Drum_Type] PRIMARY KEY CLUSTERED ([Drum_Type_ID] ASC))
+
+CREATE TABLE [dbo].[CMS_Skip_Purging] 
+		([Skip_Purging_ID] 			INT IDENTITY (1, 1) NOT NULL,
+        [Product_ID]				INT			    NULL,
+		[Drum_Type_ID]				INT             NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Skip_Purging] PRIMARY KEY CLUSTERED ([Skip_Purging_ID] ASC),
+	CONSTRAINT [fk_CMS_Skip_Purging] FOREIGN KEY ([Drum_Type_ID]) REFERENCES [dbo].[CMS_Drum_Type] ([Drum_Type_ID]))
+
+CREATE TABLE [dbo].[CMS_Charging_Control] 
+		([Charging_Control_ID] 		INT IDENTITY (1, 1) NOT NULL,
+        [Product_ID]				INT			    NULL,
+		[Drum_Type_ID]				INT             NULL,
+		[Max_Of_Change]				INT             NULL,
+		[Action]					VARCHAR (150)   NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Charging_Control] PRIMARY KEY CLUSTERED ([Charging_Control_ID] ASC),
+    CONSTRAINT [fk_CMS_Charging_Control] FOREIGN KEY ([Drum_Type_ID]) REFERENCES [dbo].[CMS_Drum_Type] ([Drum_Type_ID]))
+
+CREATE TABLE [dbo].[CMS_Filling_Station] 
+		([Filling_Station_ID] 		INT IDENTITY (1, 1) NOT NULL,
+		[Station_Code]				VARCHAR (150)   NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Filling_Station] PRIMARY KEY CLUSTERED ([Filling_Station_ID] ASC))
+
+CREATE TABLE [dbo].[CMS_Product] 
+		([CMS_Product_ID] 			INT IDENTITY (1, 1) NOT NULL,
+		[Filling_Station_ID]		INT             NULL,
+        [Product_ID]				INT			    NULL,
+		[Record_Status]			    VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Product] PRIMARY KEY CLUSTERED ([CMS_Product_ID] ASC),
+	CONSTRAINT [fk_CMS_Product] FOREIGN KEY ([Filling_Station_ID]) REFERENCES [dbo].[CMS_Filling_Station] ([Filling_Station_ID]))
+
+
+/*----------------------------------- Added by sun 21-03-2016----------------------------------------*/
+ALTER TABLE Material_Withdraw
+ALTER COLUMN To_Time  [time](7) NULL;
+
+ALTER TABLE Material_Withdraw
+ALTER COLUMN From_Time [time](7) NULL;
+
+create table Raw_Material_Attachment
+(
+Attachment_ID uniqueidentifier ROWGUIDCOL not null UNIQUE, 
+Raw_Material_ID int null,
+Attachment_File VARBINARY(MAX) FILESTREAM null,
+Attachment_Field varchar(50) null, /*COA, Invoice, Packing*/
+Create_By varchar(150) null,
+Create_On datetime null,
+Update_By varchar(150) null,
+Update_On datetime null, 
+constraint pk_Raw_Material_Attachment Primary KEY (Attachment_ID ),
+constraint fk_Raw_Material_Attachment1 foreign key (Raw_Material_ID) references Raw_Material(Raw_Material_ID)
+);
+
+GO
+ALTER TABLE [dbo].[Raw_Material_Attachment]
+    ADD [Attachment_File_Name] [varchar](300) NULL
+
+
+/*----------------------------------- Added by sun 18-04-2016----------------------------------------*/
+ALTER TABLE [dbo].[Material_Reject]
+    ADD [Overall_Status] [varchar](50) NULL 
+	
+ALTER TABLE [dbo].[Product_Template]
+    ADD [Product_Name] [varchar](500) NULL
+
+ALTER TABLE [dbo].[Product_Template]
+    ADD [From_No] [varchar](150) NULL
+
+	 	
+/*----------------------------------- Added by Jane 21-04-2016----------------------------------------*/
+	alter table Material_Reject
+add Remarks varchar(500) null
+
+ALTER TABLE [dbo].[Template_Logsheet]
+    ADD [Work_Order_No] [varchar](150) NULL
+
+
+	/*----------------------------------- Added by Jane 29-04-2016----------------------------------------*/
+ALTER TABLE [dbo].[Template_Logsheet_Header]
+    ADD [Lot_No] [varchar](150) NULL
+
+	 ALTER TABLE [dbo].[Logsheet]
+    ADD [Work_Order_No] [varchar](150) NULL
+
+   CREATE TABLE [dbo].[Lot_Number]
+(
+   [Lot_Number_ID]   INT IDENTITY (1, 1) NOT NULL,
+   Product_Code      VARCHAR (150) NULL,
+   Lot_Number_Date     Datetime null,
+   [Template_ID]     INT NULL,
+   Lot_No  VARCHAR (150) NULL,
+   [Record_Status]   VARCHAR (50) NULL,
+   [Create_By]       VARCHAR (150) NULL,
+   [Create_On]       DATETIME NULL,
+   [Update_By]       VARCHAR (150) NULL,
+   [Update_On]       DATETIME NULL,
+   CONSTRAINT [pk_Lot_Number] PRIMARY KEY CLUSTERED ([Lot_Number_ID] ASC),
+   constraint fk_Lot_Number1 foreign key (Template_ID) references Template_Logsheet(Template_ID)
+)
+
+
+	/*----------------------------------- Added by Jane 02-05-2016----------------------------------------*/
+ ALTER TABLE [dbo].[Material_Reject]
+    ADD [Disposition_Action_By] [varchar](150) NULL
+
+	 alter table  User_Profile 
+add Role_ID int null
+
+create table Page
+(
+Page_ID int identity(1,1) not null,
+Page_Name varchar(300) null,
+CONSTRAINT [pk_Page] PRIMARY KEY CLUSTERED ([Page_ID] ASC)
+)
+create table [Role]
+(
+Role_ID int  identity(1,1) not null,
+Role_Name varchar(300) null,
+CONSTRAINT [pk_Role] PRIMARY KEY CLUSTERED ([Role_ID] ASC)
+)
+create table Page_Role
+(
+Page_Role_ID int  identity(1,1) not null,
+Page_ID int null,
+Role_ID int null,
+CONSTRAINT [pk_Page_Role] PRIMARY KEY CLUSTERED ([Page_Role_ID] ASC),
+CONSTRAINT [fk_Page_Role1] FOREIGN KEY ([Page_ID]) REFERENCES [dbo].[Page] ([Page_ID]),
+CONSTRAINT [fk_Page_Role2] FOREIGN KEY ([Role_ID]) REFERENCES [dbo].[Role] ([Role_ID])
+)
+
+alter table  User_Profile 
+add CONSTRAINT [fk_User_Profile1] FOREIGN KEY ([Role_ID]) REFERENCES [dbo].[Role] ([Role_ID])
+
+alter table Page_Role
+add Modify bit null
+alter table Page_Role
+add [View] bit null
+
+alter table Material_Reject
+add Product_Code varchar(300 ) null
+
+alter table Material_Reject
+add Product_Name varchar(500 ) null
+
+alter table Material_Reject
+add Lot_No varchar(150 ) null
+
+alter table Material_Reject
+add Quantity decimal(18,2) null
+
+
+/*----------------------------------- Added by sun 10-05-2016----------------------------------------*/
+GO
+ALTER TABLE [dbo].[User_Profile]
+    ADD [LDAP_Username] [varchar](150) NULL
+
+alter table Lot_Number
+add No_Count int null
+
+GO
+ALTER TABLE [dbo].[Material_Withdraw]
+    ADD [Finished_Goods] [varchar](150) NULL
+
+GO
+ALTER TABLE [dbo].[Material_Withdraw]
+    ADD [Finished_Goods_Lot_No] [varchar](150) NULL
+
+GO
+ALTER TABLE [dbo].[Logsheet]
+    ADD [Lotgsheet_Status] [varchar](50) NULL
+
+GO
+ALTER TABLE [dbo].[Logsheet]
+    ADD [Approval] [varchar](150) NULL
+
+GO
+alter table Page_Role
+add [Close] bit null
+
+
+/*----------------------------------- Added by sun 26-05-2016----------------------------------------*/
+GO
+ALTER TABLE [dbo].[Raw_Material]
+    ADD [Expiring_Date]   DATETIME NULL
+   
+GO
+ ALTER TABLE [dbo].[Product_Template]
+    ADD [Revision] [varchar](50) NULL
+
+	GO
+ALTER TABLE [dbo].[Material_Reject]
+    ADD [Project_Name]  [varchar](50) NULL
+
+GO
+ALTER TABLE [dbo].[Material_Reject]
+    ADD [Defect_Description]  [varchar](500) NULL
+    
+
+/*----------------------------------- Added by sun 31-05-2016----------------------------------------*/
+alter table [dbo].[Logsheet]
+alter COLUMN  Approval int NULL
+
+alter table [dbo].[Logsheet]
+add Constraint fk_Logsheet_Approval foreign key (Approval) references User_Profile (Profile_ID)
+
+
+ /*----------------------------------- Added by sun 1-06-2016----------------------------------------*/
+ 
+alter table [dbo].[Material_Withdraw]
+    ADD [PLC] int NULL
+
+alter table [dbo].[Material_Withdraw]
+	add Constraint fk_Material_Withdraw_PLC foreign key (PLC) references User_Profile (Profile_ID)
+
+
+ /*----------------------------------- Added by Jane 5-06-2016----------------------------------------*/
+alter table Template_Logsheet_Group
+add Group_Order int null;
+
+alter table Template_Logsheet_Field
+add Field_Order int null;
+
+alter table Template_Logsheet_Header
+add Header_Order int null;
+
+
+ /*----------------------------------- Added by Jane 13-06-2016----------------------------------------*/
+create table CMS_Purge
+(
+Purge_ID int identity(1,1) not null,
+Drum_Code  varchar(150) NULL,
+Initial_Weight decimal(18,2) null,
+Final_Weight decimal(18,2) null,
+[Create_By] varchar(150) NULL,
+[Create_On] datetime NULL,
+[Update_By] varchar(150) NULL,
+[Update_On] datetime NULL,
+CONSTRAINT [pk_CMS_Purge] PRIMARY KEY CLUSTERED ([Purge_ID] ASC)
+)
+
+create table CMS_Charge
+(
+Charge_ID int identity(1,1) not null,
+Drum_Code  varchar(150) NULL,
+Lot_No varchar(150) NULL,
+Quantity_Scanned varchar(150) NULL,
+Filling_Station_ID int null, 
+Initial_Weight decimal(18,2) null,
+Final_Weight decimal(18,2) null,
+No_Of_Charging decimal(18,2) null,
+Max_No_Of_Charging decimal(18,2) null,
+[Create_By] varchar(150) NULL,
+[Create_On] datetime NULL,
+[Update_By] varchar(150) NULL,
+[Update_On] datetime NULL,
+CONSTRAINT [pk_CMS_Charge] PRIMARY KEY CLUSTERED ([Charge_ID] ASC),
+CONSTRAINT [fk_CMS_Charge1] FOREIGN KEY ([Filling_Station_ID]) REFERENCES [dbo].[CMS_Filling_Station] ([Filling_Station_ID])
+)
+
+
+ /*----------------------------------- Added by Sun  20-06-2016----------------------------------------*/
+
+alter table Raw_Material
+add Packaging varchar(150) NULL;
+
+alter table Raw_Material
+add Remarks_Pass   varchar(300) NULL;
+
+alter table Raw_Material
+add Remarks_Pending   varchar(300) NULL;
+
+CREATE TABLE [dbo].[Running_Number_Config](
+	[Running_Number_Config_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Running_Number_Type] [varchar](50) NULL,
+	[Number_Of_Digit] [int] NULL,
+	[Prefix_Ref_No] [varchar](50) NULL,
+	[Ref_Count] [int] NULL,
+	[Create_By] [varchar](150) NULL,
+	[Create_On] [datetime] NULL,
+	[Update_By] [varchar](150) NULL,
+	[Update_On] [datetime] NULL,
+CONSTRAINT [pk_Running_Number_Config] PRIMARY KEY CLUSTERED ([Running_Number_Config_ID] ASC))
+
+alter table Material_Reject
+add RMR_No   varchar(50) NULL;
+
+alter table Material_Reject
+add Record_Status   varchar(50) NULL;
+
+alter table Page_Role
+add Record_Status   varchar(50) NULL;
+
+alter table CMS_Purge
+add Record_Status   varchar(50) NULL;
+
+alter table CMS_Charge
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Template_Field]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Template_Group]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Template_Header]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Logsheet]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Template_Logsheet]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Product_Template]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Raw_Material]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Raw_Material_Attachment]
+add Record_Status   varchar(50) NULL;
+
+alter table [dbo].[Material_Withdraw]
+add Record_Status   varchar(50) NULL;
+
+
+ /*----------------------------------- Added by Jane 22-06-2016----------------------------------------*/
+
+alter table Material_Reject
+add GM_Approval int null
+
+alter table Material_Reject
+ADD CONSTRAINT [fk_Material_Reject_GM] FOREIGN KEY ([GM_Approval]) REFERENCES [dbo].[User_Profile] ([Profile_ID]);  
+
+CREATE TABLE [Tmp_Log_Group] (
+[Tmp_Log_Group_ID] int IDENTITY(1, 1) NOT NULL,
+[Template_ID] int NULL,
+[Group_ID] int NULL,
+[Group_Order] int NULL,
+[Create_By] varchar(150) NULL,
+[Create_On] datetime NULL,
+[Update_By] varchar(150) NULL,
+[Update_On] datetime NULL,
+CONSTRAINT [pk_Tmp_Log_Group] PRIMARY KEY  ([Tmp_Log_Group_ID] ),
+CONSTRAINT [fk_Tmp_Log_Group_1] FOREIGN KEY ([Group_ID]) REFERENCES [dbo].[Template_Group] ( [Group_ID] ),
+CONSTRAINT [fk_Tmp_Log_Group_2] FOREIGN KEY ([Template_ID])REFERENCES [dbo].[Template_logsheet] ( [Template_ID] )
+)
+
+CREATE TABLE [Tmp_Log_Header] (
+[Tmp_Log_Header_ID] int IDENTITY(1, 1) NOT NULL,
+[Tmp_Log_Group_ID] int NULL,
+[Header_ID] int NULL,
+[Header_Order] int NULL,
+CONSTRAINT [pk_Tmp_Log_Header] PRIMARY KEY  ([Tmp_Log_Header_ID] ),
+CONSTRAINT [fk_Tmp_Log_Header_1]FOREIGN KEY ([Tmp_Log_Group_ID]) REFERENCES [dbo].[Tmp_Log_Group] ( [Tmp_Log_Group_ID] ),
+CONSTRAINT [fk_Tmp_Log_Header_2] FOREIGN KEY ([Header_ID]) REFERENCES [dbo].[Template_Header] ( [Header_ID] )
+)
+
+CREATE TABLE [Tmp_Log_Field] (
+[Tmp_Log_Field_ID] int IDENTITY(1, 1) NOT NULL,
+[Tmp_Log_Group_ID] int NULL,
+[Field_ID] int NULL,
+[Field_Order] int NULL,
+CONSTRAINT [pk_Tmp_Log_Field] PRIMARY KEY  ([Tmp_Log_Field_ID] ),
+CONSTRAINT [fk_Tmp_Log_Field_1]FOREIGN KEY ([Tmp_Log_Group_ID]) REFERENCES [dbo].[Tmp_Log_Group] ( [Tmp_Log_Group_ID] ),
+CONSTRAINT [fk_Tmp_Log_Field_2] FOREIGN KEY ([Field_ID])REFERENCES [dbo].[Template_Field] ( [Field_ID] )
+)
+
+CREATE TABLE [Tmp_Log_Map] (
+[Tmp_Log_Map_ID] int IDENTITY(1, 1) NOT NULL,
+[Tmp_Log_Header_ID] int NULL,
+[Field_ID] int NULL,
+[Header_ID] int NULL,
+[Option_Selected] varchar(50) NULL,
+[Option_Text] varchar(300) NULL,
+[Option_Data_Type] varchar(150) NULL,
+[Option_Field_From] varchar(150) NULL,
+[Option_Range_From] decimal(18, 2) NULL,
+[Option_Range_To] decimal(18, 2) NULL,
+[Lot_No] varchar(150) NULL,
+CONSTRAINT [pk_Tmp_Log_Map] PRIMARY KEY  ([Tmp_Log_Map_ID] ),
+CONSTRAINT [fk_Tmp_Log_Map_1]FOREIGN KEY ([Tmp_Log_Header_ID]) REFERENCES [dbo].[Tmp_Log_Header] ( [Tmp_Log_Header_ID] ),
+)
+
+
+ /*----------------------------------- Added by Sun 08-12-2016----------------------------------------*/
+
+alter table [AgnosDB].[dbo].[Raw_Material]
+add Analysis_Type varchar(10)  null;
+
+alter table [AgnosDB].[dbo].[CMS_Product]
+add Product_Name varchar(300)  null;
+
+
+alter table [AgnosDB].[dbo].[CMS_Skip_Purging]
+add Product_ID int null;
+
+alter table [AgnosDB].[dbo].[CMS_Skip_Purging]
+add Constraint fk_CMS_Skip_Purging_Product foreign key (Product_ID) references CMS_Product (CMS_Product_ID)
+
+alter table [AgnosDB].[dbo].[CMS_Charging_Control]
+add Product_ID int null;
+
+alter table [AgnosDB].[dbo].[CMS_Charging_Control]
+add Constraint fk_CMS_Charging_Control_Product foreign key (Product_ID) references CMS_Product (CMS_Product_ID)
+
+create table CMS_Delivery
+(
+[Delivery_ID] int identity(1,1) not null,
+[Delivery_Order_No]  varchar(150) NULL,
+[Create_By] varchar(150) NULL,
+[Create_On] datetime NULL,
+[Update_By] varchar(150) NULL,
+[Update_On] datetime NULL,
+[Record_Status]	VARCHAR (50)	NULL,
+CONSTRAINT [pk_CMS_Delivery] PRIMARY KEY CLUSTERED ([Delivery_ID] ASC)
+)
+
+create table CMS_Delivery_Detail
+(
+CMS_Delivery_Detail_ID int identity(1,1) not null,
+[Delivery_ID] int null,
+[Date_Delivered] datetime NULL,
+[Create_By] varchar(150) NULL,
+[Create_On] datetime NULL,
+[Update_By] varchar(150) NULL,
+[Update_On] datetime NULL,
+[Record_Status]	VARCHAR (50)	NULL,
+CONSTRAINT [pk_CMS_Delivery_Detail] PRIMARY KEY CLUSTERED ([CMS_Delivery_Detail_ID] ASC),
+CONSTRAINT [fk_CMS_Delivery_Detail1]FOREIGN KEY ([Delivery_ID]) REFERENCES [dbo].[CMS_Delivery] ( [Delivery_ID] ),
+)
+
+alter table [AgnosDB].[dbo].[CMS_Delivery_Detail]
+add Product_ID int null;
+
+alter table [AgnosDB].[dbo].[CMS_Delivery_Detail]
+add Constraint [fk_CMS_CMS_Delivery_Detail_Product] foreign key ([Product_ID]) references [dbo].[CMS_Product] ([Product_ID]);
+
+
+alter table [AgnosDB].[dbo].[CMS_Delivery_Detail]
+add Product_ID int null;
+
+alter table [AgnosDB].[dbo].[CMS_Delivery_Detail]
+add Constraint [fk_CMS_Delivery_Detail_Product] foreign key ([Product_ID]) references [dbo].[CMS_Product] ([CMS_Product_ID]);
+
+
+alter table [AgnosDB].[dbo].[CMS_Charge]
+add  Product_Code varchar(150) NULL;
+
+alter table [AgnosDB].[dbo].[CMS_Delivery_Detail]
+add  Drum_Code varchar(1000) NULL;
+
+CREATE TABLE [dbo].[Activation_Link](
+	[Activation_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Profile_ID] [int] NOT NULL,
+	[Activation_Code] [varchar](max) NULL,
+	[Time_Limit] [datetime] NULL,
+	CONSTRAINT [pk_Activation_Link] PRIMARY KEY CLUSTERED ([Activation_ID] ASC),
+   CONSTRAINT [fk_Activation_Link_User_Profile] FOREIGN KEY ([Profile_ID]) REFERENCES [dbo].[User_Profile] ( [Profile_ID] ));
+
+
+/*----------------------------------- Added by Sun 21-12-2016----------------------------------------*/
+
+alter table [AgnosDB].[dbo].[CMS_Charge]
+add Product_ID int null;
+
+alter table [AgnosDB].[dbo].[CMS_Charge]
+add Constraint fk_CMS_Charge_Product foreign key (Product_ID) references CMS_Product (CMS_Product_ID)
+
+
+/*----------------------------------- Added by Sun 19-01-2017----------------------------------------*/
+alter table [AgnosDB].[dbo].[CMS_Delivery]
+add Completed bit null;
+
+
+/*----------------------------------- Added by Sun 17-03-2017----------------------------------------*/
+
+ALTER TABLE [dbo].[CMS_Charging_Control]
+    ADD [Drum_Code] [varchar](150) NULL
+
+ALTER TABLE [dbo].[CMS_Delivery_Detail]
+    ADD [No_Of_Containers] [int] null
+
+CREATE TABLE [dbo].[CMS_Drum_Control] 
+	  ([Drum_Control_ID] 		INT IDENTITY (1, 1) NOT NULL,
+      [Product_ID]				INT			    NULL,
+		[Drum_Type_ID]				INT             NULL,
+		[Running_Number]		   INT             NULL,
+		[Record_Status]			VARCHAR (50)	NULL,
+		[Create_By]					VARCHAR (150)   NULL,
+		[Create_On]					DATETIME        NULL,
+		[Update_By]					VARCHAR (150)   NULL,
+		[Update_On]					DATETIME        NULL,
+	CONSTRAINT [pk_CMS_Drum_Control] PRIMARY KEY CLUSTERED ([Drum_Control_ID] ASC),
+   CONSTRAINT [fk_CMS_Drum_Control_CMS_Drum_Type] FOREIGN KEY ([Drum_Type_ID]) REFERENCES [dbo].[CMS_Drum_Type] ([Drum_Type_ID]),
+   CONSTRAINT [fk_CMS_Drum_Control_CMS_Product] FOREIGN KEY ([Product_ID]) REFERENCES [dbo].[CMS_Product] ([CMS_Product_ID]))
+
+   
+ALTER TABLE [dbo].[Material_Withdraw]
+    ADD [Withdraw_From] [varchar](50) NULL,
+        [Withdraw_To] [varchar](50) NULL
+
+
+CREATE TABLE [dbo].[Upload_Attachment](
+ 	[Attachment_ID] [uniqueidentifier] ROWGUIDCOL  NOT NULL,
+	[Logsheet_ID] [int] NULL,
+   [Attachment_File_Name] [varchar](300) NULL,
+	[Attachment_File] [varbinary](max) FILESTREAM  NULL,
+	[Create_By] [varchar](150) NULL,
+	[Create_On] [datetime] NULL,
+	[Update_By] [varchar](150) NULL,
+	[Update_On] [datetime] NULL,	
+	[Record_Status] [varchar](50) NULL,
+	CONSTRAINT [pk_Upload_Attachment] PRIMARY KEY CLUSTERED ([Attachment_ID]  ASC),
+	CONSTRAINT [fk_Upload_Attachment_Logsheet] FOREIGN KEY ([Logsheet_ID]) REFERENCES [dbo].[Logsheet] ([Logsheet_ID])
+	)
+
+
+ALTER TABLE Cms_Charge
+ALTER COLUMN Quantity_Scanned int null;
+
+ALTER TABLE Cms_Charge
+ALTER COLUMN Max_No_Of_Charging int null;
+
+ALTER TABLE Cms_Charge
+ALTER COLUMN No_Of_Charging int null;
+
+ALTER TABLE [dbo].[Cms_Charge]
+    ADD [Delivery_Status] [varchar](50) NULL;
+
+ALTER TABLE [dbo].[Cms_Charge]
+    ADD [Delivery_Order_No] [varchar](150) NULL;
+
+ALTER TABLE [dbo].[Cms_Charge]
+    ADD [Date_Delivered] [datetime] NULL;
+
+ALTER TABLE [dbo].[Cms_Charge]
+    ADD [Delivery_ID] [int] null
+
+ALTER TABLE [dbo].[CMS_Delivery_Detail]
+    ADD [Charge_ID] [int] null
+
+/*----------------------------------- Added by Sun 30-03-2017----------------------------------------*/
+
+ALTER TABLE [dbo].[Material_Withdraw]
+    ADD [Location] [varchar](150) NULL;
+
+/*----------------------------------- Added by Sun 04-05-2017----------------------------------------*/
+ALTER TABLE [dbo].[User_Profile]
+    ADD [Email_Notification] [bit] null
+
+/*----------------------------------- Added by Sun 17-05-2017--------------------------------------
+ALTER TABLE  [dbo].[CMS_Delivery_Detail]
+  DROP COLUMN Charge_ID;
+
+ALTER TABLE [dbo].[CMS_Purge]
+    ADD [Delivery_ID] [int] null
+
+ALTER TABLE [dbo].[CMS_Purge]
+    ADD [Delivery_Status] [varchar](50) NULL;
+
+ALTER TABLE [dbo].[Material_Withdraw]
+    ADD [Qty_balance]  decimal(18, 2)NULL;
+
+
+/*----------------------------------- Added by Sun 27-05-2017--------------------------------------
+ALTER TABLE [dbo].[CMS_Drum_Control]
+    ADD [Product_Code] [varchar](150) NULL;
+    
+ALTER TABLE [dbo].[CMS_Delivery_Detail]
+    ADD [Product_Code] [varchar](150) NULL;
+    
+
+select * from [dbo].[CMS_Skip_Purging]
+UPDATE [dbo].[CMS_Skip_Purging]  
+    SET Product_Code = (
+       SELECT Product_Code
+        FROM  [dbo].[CMS_Product]
+        WHERE [dbo].[CMS_Skip_Purging].Product_ID = [dbo].[CMS_Product].CMS_Product_ID
+    );
+
+select * from [dbo].[CMS_Charge]
+UPDATE [dbo].[CMS_Charge]  
+    SET Product_Code = (
+       SELECT Product_Code
+        FROM  [dbo].[CMS_Product]
+        WHERE [dbo].[CMS_Charge].Product_ID = [dbo].[CMS_Product].CMS_Product_ID
+    );
+   
+select * from [dbo].[CMS_Drum_Control]
+UPDATE  [dbo].[CMS_Drum_Control]
+    SET Product_Code = (
+       SELECT Product_Code
+        FROM  [dbo].[CMS_Product]
+        WHERE [dbo].[CMS_Drum_Control].Product_ID = [dbo].[CMS_Product].CMS_Product_ID
+    );
+
+
+/*----------------------------------- Added by Sun 30-01-2018--------------------------------------
+
+ALTER TABLE [dbo].[CMS_Charge]
+    ADD [Profile_ID] [int] null
+
+ALTER TABLE [dbo].[CMS_Charge]  WITH CHECK ADD  CONSTRAINT [fk_CMS_Charge_User_Profile] FOREIGN KEY([Profile_ID])
+REFERENCES [dbo].[User_Profile] ([Profile_ID])
+GO
+
+SELECT  * FROM [Agnos2DB].[dbo].[CMS_Charge]
+UPDATE  [dbo].[CMS_Charge]
+    SET Profile_ID = (
+       SELECT Profile_ID
+        FROM  [dbo].[User_Profile]
+        WHERE [dbo].[CMS_Charge].Update_By = [dbo].[User_Profile].Email_Address
+    );
+
+
+/*----------------------------------- Added by Sun 12-06-2018--------------------------------------
+Alter Table  [dbo].[Running_Number_Config]
+Add Running_Year [int] NULL;

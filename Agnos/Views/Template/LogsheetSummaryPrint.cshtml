@@ -1,0 +1,110 @@
+﻿@model Agnos.Models.LogsheetSummaryViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@using AgnosModel.Models;
+@{
+   ViewBag.Title = "LogsheetSummaryPrint";
+   var tmphdrs = new List<Tmp_Log_Header>();
+   var tmpfields = new List<Tmp_Log_Field>();
+   var gbgcolor = "#3deb3d";
+}
+@functions{
+   public string GetBgColor(string bg)
+   {
+      if (bg == "#3deb3d")
+      {      
+        return "#b84747";
+      }
+      else
+      {
+         return "#3deb3d";
+      }
+   }
+}
+@if (Model.Tmp != null && Model.Tmp.Tmp_Log_Group != null)
+{
+   <table border="1">
+      <thead>
+         <tr>
+            <th colspan="2" style="background-color:@gbgcolor"><b>Lot Details</b></th>
+            @foreach (var tmpG in Model.Tmp.Tmp_Log_Group.OrderBy(o => o.Template_Group.Group_Order))
+            {
+               var fcnt = 1;
+               if (tmpG.Tmp_Log_Field != null && tmpG.Tmp_Log_Field.Count() > 0 & tmpG.Tmp_Log_Header != null && tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).Count() > 0)
+               {
+                  fcnt = tmpG.Tmp_Log_Field.Count() * tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).Count();
+                  <th colspan="@fcnt" style="background-color:@GetBgColor(gbgcolor)"><b>@tmpG.Template_Group.Group_Name</b></th>
+                  gbgcolor = GetBgColor(gbgcolor);
+               }
+            }
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td valign="top" style="background-color:#01dcff"><b>@Resource.Lot_No</b></td>
+            <td valign="top" style="background-color:#01dcff"><b>@Resource.Dilution_Tank_No</b></td>
+            @foreach (var tmpG in Model.Tmp.Tmp_Log_Group.OrderBy(o => o.Template_Group.Group_Order))
+            {
+               if (tmpG.Tmp_Log_Field != null && tmpG.Tmp_Log_Field.Count() > 0 & tmpG.Tmp_Log_Header != null && tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).Count() > 0)
+               {
+                  foreach (var tmpfield in tmpG.Tmp_Log_Field.OrderBy(o => o.Field_Order))
+                  {
+                     foreach (var tmphdr in tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).OrderBy(o => o.Header_Order))
+                     {
+                        if (tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).Count() == 1)
+                        {
+                           <td valign="top" style="background-color:#01dcff"><b>@tmpfield.Template_Field.Field_Name</b></td>
+                        }
+                        else
+                        {
+                           <td valign="top" style="background-color:#01dcff"><b>@tmpfield.Template_Field.Field_Name - @tmphdr.Template_Header.Header_Name</b></td>
+                        }
+                     }
+                  }
+               }
+            }
+         </tr>
+         @foreach(var log in Model.Logs.OrderBy(o=>o.Lot_No))
+         {
+            <tr>
+               <td valign="top" style="text-align:left" ><b>@log.Lot_No</b></td>
+               <td valign="top" style="text-align:left"><b>@log.Dilution_Tank_No</b></td>
+               @foreach (var tmpG in Model.Tmp.Tmp_Log_Group.OrderBy(o => o.Template_Group.Group_Order))
+               {
+                  if (tmpG.Tmp_Log_Field != null && tmpG.Tmp_Log_Field.Count() > 0 & tmpG.Tmp_Log_Header != null && tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).Count() > 0)
+                  {
+                     foreach (var tmpfield in tmpG.Tmp_Log_Field.OrderBy(o => o.Field_Order))
+                     {
+                        foreach (var tmphdr in tmpG.Tmp_Log_Header.Where(w => w.Sumary_Report_Display != false).OrderBy(o => o.Header_Order))
+                        {
+                           var text = "-";
+                           var group = log.Logsheet_Group.Where(w=>w.Group_ID == tmpG.Group_ID).FirstOrDefault();
+                           if(group != null)
+                           {
+                              var hdr = group.Logsheet_Header.Where(w => w.Header_ID == tmphdr.Header_ID).FirstOrDefault();
+                              if(hdr != null)
+                              {
+                                 var map = hdr.Logsheet_Map.Where(w => w.Field_ID == tmpfield.Field_ID).FirstOrDefault();
+                                 if( map != null)
+                                 {
+                                    text = map.Text_Display;
+                                 }
+                              }
+                           }
+                           if (string.IsNullOrEmpty(text))
+                           {
+                              text = "-";
+                           }
+                           <td valign="top" >@text</td>
+                        }
+                     }
+                  }
+               }
+            </tr>
+         }
+      </tbody>
+   </table>
+   
+}
+

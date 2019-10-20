@@ -1,0 +1,576 @@
+﻿@model Agnos.Models.MaterialInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Material_Info;
+   var haveCOA = false;
+   var haveInvoice = false;
+   var havePacking = false;
+   if (Model.Attachment_Files != null)
+   {
+      for (var i = 0; i < Model.Attachment_Files.Count(); i++)
+      {
+         if (Model.Attachment_Files[i].Attachment_Field == Attachment_Field_Name.COA) { haveCOA = true; }
+
+         if (Model.Attachment_Files[i].Attachment_Field == Attachment_Field_Name.Invoice) { haveInvoice = true; }
+
+         if (Model.Attachment_Files[i].Attachment_Field == Attachment_Field_Name.Packing) { havePacking = true; }
+
+      }
+   }
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyDetail1');
+         Disable('divModifyDetail2');
+         Disable('divModifyDetail3');
+         Disable('divModifyDetail4');
+         Disable('divModifyDetail5');
+         Disable('divModifyDetail6');
+
+         $('#btn_Cancel').removeAttr('disabled');
+      }
+
+      if ('@Model.showPrintDlg'.toLowerCase() == 'true') {
+         $('#modal-print').modal('show');
+      }
+
+      if ('@Model.operation' == '@Operation.C') {
+         NewFileAttach('@Attachment_Field_Name.COA');
+         NewFileAttach('@Attachment_Field_Name.Invoice');
+         NewFileAttach('@Attachment_Field_Name.Packing');
+
+         if ('@Model.Product_Code' != null && '@Model.Product_Code' != '') {
+            if ('@Model.Lot_No' == null || '@Model.Lot_No' == '')
+               $('#modal-product').modal('show');
+            else if ('@Model.Receiving_Date' == null || '@Model.Receiving_Date' == '')
+               $('#modal-product').modal('show');
+
+            //if ($("#Product_Code option").length > 0)
+            //   $("#Product_Code").get(0).selectedIndex = 0;
+
+            //Product_Onchange();
+         }
+      }
+      else {
+         if ('@haveCOA'.toLowerCase() == 'false')
+            NewFileAttach('@Attachment_Field_Name.COA');
+         if ('@haveInvoice'.toLowerCase() == 'false')
+            NewFileAttach('@Attachment_Field_Name.Invoice');
+         if ('@havePacking'.toLowerCase() == 'false')
+            NewFileAttach('@Attachment_Field_Name.Packing');
+      }
+   })
+
+   function Search_Product_KeyEnter(event) {
+      if (event.keyCode == 13) {
+         var pCode = $("#Search_Product").val();
+         window.location.href = '@Url.Action("MaterialInfo", "Material", new { operation = Model.operation})&pCode=' + pCode;
+      }
+   }
+   function Product_Onchange() {
+      var pCode = $("#Product_Code").val();
+      window.location.href = '@Url.Action("MaterialInfo", "Material", new { operation = Model.operation})&pCode=' + pCode;
+   }
+
+   function NewFileAttach(attType) {
+      var index = $('.c' + attType).length;
+      var data = { pIndex: index, pAttType: attType, pModify: '@(Model.Modify.HasValue ? Model.Modify.Value : false )' };
+      $.ajax({
+         url: '@Url.Action("MaterialAddFile", "Material")',
+         //Passes the content of an input up
+         data: data,
+         contentType: "application/json; charset=utf-8",
+         success: function (data) {
+            $('#divUpload' + attType).append(data);
+            //$("#view" + attType + index).hide();
+         }
+      });
+   }
+
+   function DeleteFileAttach(attID) {
+
+      var btn = "#btnuploadfile" + attID;
+      var id = $('#Attachment_ID' + attID).val()
+      if (id != "" && id != null) {
+         $.ajax({
+            type: 'POST',
+            url: 'MaterialDeleteFile',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ pAttachmentID: id }),
+            dataType: 'json',
+            success: function (data) {
+               if (data.code == 1) {
+                  alert('Attachment Field has been deleted successfully.');
+               }
+               // else {
+               //   alert('Error!');
+               //}
+            }
+         });
+      }
+      $("#uploadfile" + attID).val('');
+      $("#uploadfile" + attID).parents('.input-group').find(':text').val('');
+      $('#' + attID).hide();
+      $(btn).hide();
+   }
+
+   function InitFileAttach(index, attType, filename) {
+      var id = "#uploadfile" + attType + index;
+      $(id).parents('.input-group').find(':text').val(filename);
+
+   }
+
+
+
+   $(function () {
+      $(document).on('change', '.btn-file :file', function () {
+         var input = $(this),
+         numFiles = input.get(0).files ? input.get(0).files.length : 1,
+         label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+
+         var id = "#" + input.get(0).id;
+
+         var btn = "#btn" + input.get(0).id;
+         var filename = $(id).val();
+         if (filename != '') {
+            var ext = '';
+            var k = filename.lastIndexOf('.');
+            if (k >= 0) {
+               ext = filename.substring(k + 1).toLowerCase();
+            }
+            if (ext != 'jpg' && ext != 'jpeg' && ext != 'png' && ext != 'gif' && ext != 'csv' &&
+                 ext != 'txt' && ext != 'pdf' && ext != 'xls' & ext != 'xlsx' && ext != 'doc' && ext != 'docx') {
+               $(id).after($(id).clone(true)).remove();
+               $(id).parents('.input-group').find(':text').val('');
+               alert('Please upload .jpg, .jpeg, .png, .gif, .txt, .pdf, .xls, .xlsx, .doc or .docx');
+               return;
+            }
+            var fsize = $(id)[0].files[0].size;
+            if (fsize > 2097150) {
+               alert('Please upload file size is less than 2 MB');
+               $(id).after($(id).clone(true)).remove();
+               $(id).parents('.input-group').find(':text').val('');
+               return false;
+            }
+            var input = $(this).parents('.input-group').find(':text'),
+                log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+            console.log(log);
+            if (input.length) {
+               input.val(log);
+            } else {
+               if (log) alert(log);
+            }
+
+            $(btn).show();
+            /*save*/
+            var attID = $(id.replace('uploadfile', 'Attachment_ID')).val();
+            var fieldType = '';
+            if (id.indexOf('@Attachment_Field_Name.COA') > 0)
+               fieldType = '@Attachment_Field_Name.COA';
+            else if (id.indexOf('@Attachment_Field_Name.Invoice') > 0)
+               fieldType = '@Attachment_Field_Name.Invoice';
+            else if (id.indexOf('@Attachment_Field_Name.Packing') > 0)
+               fieldType = '@Attachment_Field_Name.Packing';
+
+            var blah = new FormData();
+            blah.append("file", $(id)[0].files[0]);
+            $.ajax({
+               async: true,
+               type: 'POST',
+               url: '@Url.Action("MaterialSaveFile", "Material")?pAttID=' + attID + '&pRawID=@Model.Raw_Material_ID&pField=' + fieldType,
+               data: blah,
+               dataType: 'json',
+               cache: false,
+               contentType: false,
+               processData: false,
+               success: function (data) {
+                  if (data != null) {
+                     var btnView = $(id.replace('uploadfile', 'view')).get(0);
+                     if (btnView != null)
+                        btnView.href = '@Url.Action("MaterialDisplayFile", "Material")?pAttID=' + data;
+
+                     $(id.replace('uploadfile', 'Attachment_ID')).val(data);
+                     //$(btn).show();
+                  }
+               }
+            });
+
+         }
+      });
+   });
+
+   function Authorized_Onclick() {
+      $("#Authorized_By").val('@Model.User_Login_ID');
+      $("#Authorized_By_Name").val('@Model.User_Login_Name');
+      $("#Authorized_Date").val('@Model.Current_Date');
+
+      if ('@Model.Raw_Material_ID.HasValue'.toLowerCase() == 'true') {
+         $.ajax({
+            url: '@Url.Action("MaterialAuthorized", "Material")',
+            //Passes the content of an input up
+            data: { pRawID: '@Model.Raw_Material_ID', pPID: $("#Authorized_By").val() },
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+
+            }
+         });
+      }
+
+
+   }
+
+
+</script>
+
+@using (Html.BeginForm("MaterialInfo", "Material", FormMethod.Post, new { role = "form", enctype = "multipart/form-data", onkeydown = "return event.keyCode!=13" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.HiddenFor(m => m.Raw_Material_ID)
+      @Html.HiddenFor(m => m.operation)
+      @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Authorized_By)
+
+      @Html.HiddenFor(m => m.User_Login_ID)
+      @Html.HiddenFor(m => m.User_Login_Name)
+      @Html.HiddenFor(m => m.Current_Date)
+
+      @Html.AppPageHeader(Resource.Incoming_Raw_Material)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile" id="divModifyDetail1">
+         <div class="tile-body ">
+            @{
+   var showBtnRetrive = false;
+            }
+
+            @if (Model.operation == Operation.C)
+            {
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Search_Product)
+                       }, 4
+                  )
+
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new { onchange = "Product_Onchange()"}),
+                            @Html.AppButtonModal("Retrive Product Information", "modal-product", AppColor.none, new { @readonly = (Model.operation == Operation.C ? false : true) })
+                       }, 4
+                  )
+
+               @*@Html.AppLabelFor(m => m.Search_Product)
+                  @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new { onchange = "Product_Onchange()"},6)*@
+               @*@Html.AppTextboxFor(m => m.Search_Product, 6, new { onkeydown = "Search_Product_KeyEnter(event)" })*@
+            }
+            else if (Model.operation == Operation.U)
+            {
+               showBtnRetrive = true;
+            }
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Product_Name)
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Product_Code, new{ @readonly=true}),
+                           @Html.AppTextboxFor(m =>m.Product_Name),
+                           @Html.AppButtonModal("Retrive Product Information", "modal-product", AppColor.none, new { @readonly = (Model.operation == Operation.C ? false : true) , style= (showBtnRetrive ? "display:displayed;" : "display:none;" ) })
+                       }, 4
+                  )
+         </div>
+      </section>
+
+      <section class="tile" id="divModifyDetail2">
+         @Html.AppSectionHeader("Packing Condition")
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Dented),
+                           @Html.AppLabelFor(m =>m.Hole)
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppRadioButtonFor(m =>m.Dented, new { id = "DentedY", text = "Yes", value = true, @checked = true }),
+                           @Html.AppRadioButtonFor(m =>m.Dented, new { id = "DentedN", text = "No", value = false }),
+                           @Html.AppRadioButtonFor(m =>m.Hole, new { id = "HoleY", text = "Yes", value = true, @checked = true }),
+                           @Html.AppRadioButtonFor(m =>m.Hole, new { id = "HoleN", text = "No", value = false }),
+                       }, 2
+                  )
+         </div>
+      </section>
+
+      <section class="tile" id="divModifyDetail6">
+         @Html.AppSectionHeader(Resource.Packaging)
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Packaging),
+                           @Html.AppDropDownListFor(m => m.Packaging, Model.cPackaginglist),
+                       }, 4
+                  )
+         </div>
+      </section>
+
+      <section class="tile" id="divModifyDetail3">
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Lot_No),
+                           @Html.AppLabelFor(m =>m.Expiring_Date),
+                            @Html.AppLabelFor(m =>m.Receiving_Date),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Lot_No,new{@readonly=true}),
+                           @Html.AppTextboxFor(m =>m.Expiring_Date,new{@readonly=true}),
+                           @Html.AppTextDateFor(m =>m.Receiving_Date),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Total_Receiving),
+                            @Html.AppLabelFor(m =>m.UOM),
+                           @Html.AppLabelFor(m =>m.Report_Date)
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxDecimalFor(m =>m.Total_Receiving),
+                           @Html.AppDropDownListFor(m => m.UOM, Model.cUOMlist),
+                            @Html.AppTextDateFor(m =>m.Report_Date),
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.COA),
+                           @Html.AppLabelFor(m =>m.Analysis_Type),
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppMultiControl(new MvcHtmlString[] {
+                               @Html.AppRadioButtonFor(m =>m.COA, new { id = "COAY", text = "NG", value =  "NG", @checked = true }),
+                               @Html.AppRadioButtonFor(m =>m.COA, new { id = "COAN", text = "OK", value = "OK" }),
+                           }, 2),
+                            @Html.AppMultiControl(new MvcHtmlString[] {
+                               @Html.AppRadioButtonFor(m =>m.Analysis_Type, new { id = Analysist_Type.NG, text = Analysist_Type.NG, value =  Analysist_Type.NG, @checked = true }),
+                               @Html.AppRadioButtonFor(m =>m.Analysis_Type, new { id = Analysist_Type.NA, text = Analysist_Type.NA, value = Analysist_Type.NA }),
+                               @Html.AppRadioButtonFor(m =>m.Analysis_Type, new { id =  Analysist_Type.OK, text = Analysist_Type.OK, value = Analysist_Type.OK }),
+                           }, 2)
+                       }, 4
+                  )
+         </div>
+      </section>
+
+      <section class="tile">
+         @Html.AppSectionHeader("Attachments")
+         <div class="tile-body ">
+            <div id="divUploadCOA">
+               @if (Model.Attachment_Files != null && Model.Attachment_Files.Count > 0)
+               {
+                  var coa = Model.Attachment_Files.Where(w => w.Attachment_Field == Attachment_Field_Name.COA).ToList();
+                  for (var i = 0; i < coa.Count(); i++)
+                  {
+                     var row = coa[i];
+                     Html.RenderPartial("UploadRow", new MaterialFileAttach()
+                     {
+                        Attachment_ID = row.Attachment_ID,
+                        Attachment_Field = row.Attachment_Field,
+                        File = row.File,
+                        File_Name = row.File_Name,
+                        Index = i,
+                        Modify = Model.Modify,
+                     });
+
+                     <script type="text/javascript">
+                        $(function () { InitFileAttach('@i', '@row.Attachment_Field', '@row.File_Name') });
+                     </script>
+                  }
+               }
+            </div>
+
+            <div id="divUploadInvoice">
+               @if (Model.Attachment_Files != null && Model.Attachment_Files.Count > 0)
+               {
+                  var inv = Model.Attachment_Files.Where(w => w.Attachment_Field == Attachment_Field_Name.Invoice).ToList();
+                  for (var i = 0; i < inv.Count(); i++)
+                  {
+                     var row = inv[i];
+                     Html.RenderPartial("UploadRow", new MaterialFileAttach()
+                     {
+                        Attachment_ID = row.Attachment_ID,
+                        Attachment_Field = row.Attachment_Field,
+                        File = row.File,
+                        File_Name = row.File_Name,
+                        Index = i,
+                        Modify = Model.Modify,
+                     });
+
+                     <script type="text/javascript">
+                        $(function () { InitFileAttach('@i', '@row.Attachment_Field', '@row.File_Name') });
+                     </script>
+                  }
+               }
+            </div>
+
+            <div id="divUploadPacking">
+               @if (Model.Attachment_Files != null && Model.Attachment_Files.Count > 0)
+               {
+                  var pack = Model.Attachment_Files.Where(w => w.Attachment_Field == Attachment_Field_Name.Packing).ToList();
+                  for (var i = 0; i < pack.Count(); i++)
+                  {
+                     var row = pack[i];
+                     Html.RenderPartial("UploadRow", new MaterialFileAttach()
+                     {
+                        Attachment_ID = row.Attachment_ID,
+                        Attachment_Field = row.Attachment_Field,
+                        File = row.File,
+                        File_Name = row.File_Name,
+                        Index = i,
+                        Modify = Model.Modify,
+                     });
+
+                     <script type="text/javascript">
+                        $(function () { InitFileAttach('@i', '@row.Attachment_Field', '@row.File_Name') });
+                     </script>
+                  }
+               }
+            </div>
+
+
+            @*@Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        @Html.AppLabel("Packing List"),
+                          //@Html.AppFileUpload("uploadfile3", new { name = "files[2]"}),
+                         //@Html.AppActionLink(Model.filename3,Url.Action("DisplayAttactment", "Material", new { pAttID = Model.Attachment_ID_3}),AppColor.link, new { id = "Attachment_ID_3" ,target="_blank"} ),
+                          @Html.AppButtonModal("Upload", "modal-upload3", AppColor.none,new{onclick="Open_Upload_Onclick(3)"}),
+                        @Html.AppBlank("divUpload3")
+                    }, 4
+               )*@
+         </div>
+      </section>
+      <section class="tile" id="divModifyDetail4">
+         @Html.AppSectionHeader(Resource.Status)
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppBlank(),
+                            @Html.AppLabel("Quantity")
+                       }, 6
+                  ),
+                   @Html.AppLabelFor(w=>w.Remarks_Pass)
+
+            }, 4)
+
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppCheckBoxFor(m =>m.Status_Pass),
+                           @Html.AppTextboxDecimalFor(w=>w.Qty_Pass),
+                       }, 6
+                  ),
+                   @Html.AppTextboxFor(w=>w.Remarks_Pass),
+                   @Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID ,pSelStatus = Material_Status.Passed}) , AppColor.none, new {Target = ActionTarget._blank, @disabled = !Model.Raw_Material_ID.HasValue}),
+            }, 4)
+
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppCheckBoxFor(m =>m.Status_Pending),
+                           @Html.AppTextboxDecimalFor(w=>w.Qty_Pending),
+                       }, 6
+                  ),
+                 @Html.AppTextboxFor(w=>w.Remarks_Pending),
+                 @Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID,pSelStatus = Material_Status.Pending}) , AppColor.none, new {Target = ActionTarget._blank, @disabled = !Model.Raw_Material_ID.HasValue}),
+            }, 4)
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                  @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                          @Html.AppCheckBoxFor(m =>m.Status_Reject),
+                           @Html.AppTextboxDecimalFor(w=>w.Qty_Reject)
+                       }, 6
+                  ),
+                  @Html.AppBlank(),
+                   @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                          @Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID,pSelStatus = Material_Status.Reject}) , AppColor.none, new {Target = ActionTarget._blank, @disabled = !Model.Raw_Material_ID.HasValue}),
+                          @Html.AppActionLink(Resource.Print_Report, Url.Action("MaterialRejectInfo","Material", new{pRawID = Model.Raw_Material_ID,pCode = Model.Product_Code}) , AppColor.none, new {Target = ActionTarget._blank,  @disabled = !Model.Raw_Material_ID.HasValue}),
+                       }, 4
+                  ),
+            }, 4)
+
+            @Html.AppValidationMessage("Total_Qty")
+         </div>
+      </section>
+      <section class="tile" id="divModifyDetail5">
+         @Html.AppSectionHeader("If Rejected")
+         <div class="tile-body ">
+            @Html.AppLabelFor(m => m.Reject_Reason)
+            @Html.AppTextAreaFor(m => m.Reject_Reason)
+            @Html.AppLabelFor(m => m.Reject_Remarks)
+            @Html.AppTextAreaFor(m => m.Reject_Remarks)
+         </div>
+      </section>
+      <section class="tile" id="divModifyDetail5">
+         @Html.AppSectionHeader(Resource.Authorized)
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                 @Html.AppLabelFor(m => m.Authorized_By),
+                 @Html.AppLabelFor(m => m.Authorized_Date)
+            }, 4)
+            @Html.AppMultiControl(
+               new MvcHtmlString[] {
+                   @Html.AppTextboxFor(m => m.Authorized_By_Name, new { @readonly = true}),
+                   @Html.AppTextDateFor(m => m.Authorized_Date),
+                   @Html.AppButton(Resource.Authorized, AppButtonType.button, AppColor.blue, new { name = "savemode", value = "authorized", onclick="Authorized_Onclick()" }),
+            }, 4)
+         </div>
+      </section>
+      <section class="tile">
+         <div class="tile-body ">
+            @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { @disabled = readView, name = "savemode", value = "save" })
+            @Html.AppButton(Resource.Save_Print, AppButtonType.submit, AppColor.blue, new { name = "savemode", value = "print", @disabled = readView })
+            @Html.AppActionLink(Resource.Cancel, Url.Action("Material", "Material", new { }), AppColor.none)
+         </div>
+      </section>
+
+      @* Modal *@
+      @{ Html.RenderPartial("PrintDlg", Model); }
+
+      @{ Html.RenderPartial("ProductDlg", new ProductTransactionViewModels()
+         {
+            Transaction_ID = Model.Transaction_ID,
+            ProductTrancList = Model.ProductTrancList
+         }); }
+   </div>
+}

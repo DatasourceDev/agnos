@@ -1,0 +1,51 @@
+﻿@model AgnosCMS.Models.RegisterViewModel
+@{
+    ViewBag.Title = "Register";
+}
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using AppFramework.Control;
+@using AgnosModel
+@{
+    ViewBag.Title = "Register";
+}
+<script type="text/javascript">
+    $(function () {
+        $("#content").addClass('full-page bg-8');
+        $("#navbar").hide();
+    });
+</script>
+
+@using (Html.BeginForm("Register", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-signin", role = "form", id = "form-signin" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="login-block">
+        <section class="tile">
+            <div class="tile-body">
+                <div class="row">
+                    <div class="col-md-12">
+                       <img src="@AppSetting.SERVER_NAME/SBSTmpAPI/assets/images/imgprofile.jpg" class="logo" style="height:100px;">
+                        <h3><strong>Register</strong></h3>
+                    </div>
+                </div>
+
+                @Html.AppTextboxFor(m =>m.Email_Address)
+                @Html.AppPasswordFor(m =>m.Password)
+                @Html.AppPasswordFor(m =>m.ConfirmPassword)
+
+                <div class="row">
+                    <div class="col-md-12">
+                        @Html.AppButton("Register", AppButtonType.submit, AppColor.greensea)
+                        @Html.AppButton("Cancel", AppButtonType.reset)
+                    </div>
+                </div>
+
+              
+            </div>
+        </section>
+    </div>
+}
+
+
+
+

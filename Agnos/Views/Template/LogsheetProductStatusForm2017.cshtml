@@ -1,0 +1,375 @@
+﻿@model Agnos.Models.LogsheetInfoViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.Product_Status_Form;
+
+   if (string.IsNullOrEmpty(Model.Packaging_Name)) { Model.Packaging_Name = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Product_Name)) { Model.Product_Name = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Lot_No)) { Model.Lot_No = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Expiry_Date)) { Model.Expiry_Date = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.RMR_No)) { Model.RMR_No = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Reason_If_Reject)) { Model.Reason_If_Reject = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Authorized_By)) { Model.Authorized_By = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Authorized_Date)) { Model.Authorized_Date = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.UAI)) { Model.UAI = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.RTS)) { Model.RTS = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Rework)) { Model.Rework = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Scrap)) { Model.Scrap = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Product_Code)) { Model.Product_Code = Resource.NA; }
+   if (string.IsNullOrEmpty(Model.Remarks)) { Model.Remarks = Resource.NA; }
+
+}
+
+
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table style="width: 100%;" class="header-form">
+         <tr>
+            <td width="15%"></td>
+            <td style="font-weight:700;" width="40%">
+               <br /><br />
+               <h3><span style="text-align: center;text-decoration:underline">@Resource.Product_Status_Form</span></h3>
+            </td>
+            <td width="15%" style="text-align:right;font-size: 8px;">
+               F025/02<br />
+               AP03
+            </td>
+         </tr>
+      </table>
+      <table cellpadding="2" cellspacing="2" style="width:100%;" border="1">
+         <tr>
+            <td style="text-align:right;font-weight:700;width:25%" width="30%">@Resource.Product : </td>
+            <td>@Model.Product_Name</td>
+         </tr>
+         <tr>
+            <td style="text-align:right;font-weight:700;">@Resource.Lot_No : </td>
+            <td>@Model.Lot_No</td>
+         </tr>
+         <tr>
+            <td style="text-align:right;font-weight:700;">@Resource.Packaging : </td>
+            <td>@Model.Packaging_Name</td>
+         </tr>
+         <tr>
+            <td style="text-align:right;font-weight:700;">@Resource.Quantity : </td>
+            <td>
+               @if (Model.Quantity.HasValue && Model.Quantity.Value > 0)
+               {
+                  @(NumUtil.FormatCurrency(Model.Quantity) + " " + Model.UOM_Name)
+               }
+               else
+               {
+                  @(Resource.NA + " " + Model.UOM_Name)
+               }
+            </td>
+         </tr>
+         <tr>
+            <td style="text-align:right;font-weight:700;">@Resource.Expiry_Date : </td>
+            <td>@Model.Expiry_Date</td>
+         </tr>
+      </table>
+      <br />
+      <br />
+      <table cellpadding="2" cellspacing="2" style="width:100%;" border="1">
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="2" style="width:100%;" border="0">
+                  <tr>
+                     <td style="font-weight:700" width="25%">@Resource.Status : </td>
+                     @if (Model.Product_Status == Material_Status.Passed)
+                     {
+                        <td style="font-weight:700" width="40%"> @Resource.Passed /  <strike>@Resource.Pending / @Resource.Reject </strike> </td>
+                     }
+                     else if (Model.Product_Status == Material_Status.Pending)
+                     {
+                        <td style="font-weight:700" width="40%"><strike> @Resource.Passed </strike> / @Resource.Pending /<strike> @Resource.Reject </strike> </td>
+                     }
+                     else if (Model.Product_Status == Material_Status.Reject)
+                     {
+                        <td style="font-weight:700" width="40%"> <strike> @Resource.Passed /  @Resource.Pending </strike> / @Resource.Reject </td>
+                     }
+                     <td style="font-weight:700;" width="12%">@Resource.RMR_No : </td>
+                     <td borderbuttom="1">@Model.RMR_No</td>
+                  </tr>
+                  <tr>
+                     <td style="font-weight:700;">@Resource.Reason_If_Reject_Product_Form : </td>
+                     <td colspan="3" borderbuttom="1">@Model.Reason_If_Reject</td>
+                  </tr>
+                  <tr>
+                     <td style="font-weight:700;">@Resource.Authorized_By :</td>
+                     <td borderbuttom="1">@Model.Authorized_By</td>
+                     <td style="font-weight:700;">@Resource.Date : </td>
+                     <td borderbuttom="1">@Model.Authorized_Date</td>
+                  </tr>
+                  <tr>
+                     <td colspan="4"><br /></td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+      <br />
+      <table cellpadding="2" cellspacing="2" style="width:100%;" border="0">
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="2" style="width:100%;">
+                  <tr>
+                     <td style="font-weight:700;" width="25%">@Resource.Action_Taken</td>
+                     <td style="font-weight:700;" width="9%">
+                        @Resource.UAI :
+                     </td>
+                     <td borderbuttom="1">
+                        @Model.UAI
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td colspan="2" style="font-size:8px;font-weight:700">
+                        Use-As-Is
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td style="font-weight:700;">
+                        @Resource.RTE :
+                     </td>
+                     <td valign="top" borderbuttom="1">
+                        @Model.RTS
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td colspan="2" style="font-size:8px;font-weight:700">
+                        @Resource.Return_To_External_Provider
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td style="font-weight:700;">
+                        @Resource.Rework :
+                     </td>
+                     <td valign="top" borderbuttom="1">
+                        @Model.Rework
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td style="font-weight:700;">
+                        @Resource.Scrap :
+                     </td>
+                     <td borderbuttom="1">
+                        @Model.Scrap
+                     </td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td colspan="2" style="font-size:8px;font-weight:700">
+                        @if (Model.Dispose == Logsheet_Dispose.Internally)
+                        {
+                           <span><strike> @Resource.NA </strike> / @Resource.Dispose_Internally /<strike> @Resource.Dispose_Externally </strike> </span>
+                        }
+                        else if (Model.Dispose == Logsheet_Dispose.Externally)
+                        {
+                           <span> <strike> @Resource.NA /  @Resource.Dispose_Internally </strike> / @Resource.Dispose_Externally </span>
+                        }
+                        else
+                        {
+                           <span> @Resource.NA /  <strike>@Resource.Dispose_Internally / @Resource.Dispose_Externally </strike> </span>
+                        }
+                     </td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+      <br />
+      <table cellpadding="2" cellspacing="2" style="width:100%;" border="0">
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="2" style="width:100%;">
+                  <tr>
+                     <td style="font-weight:700;" width="25%"> @Resource.Authorized_By : </td>
+                     <td width="40%" borderbuttom="1">@Model.Authorized_By</td>
+                     <td style="font-weight:700;" width="12%"> @Resource.Date : </td>
+                     <td borderbuttom="1">@Model.Authorized_Date</td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+      <br />
+      @if (Model.Product_Status == Material_Status.Passed)
+      {
+         <table cellpadding="5" cellspacing="1" border="1" bgcolor="#05ABCA">
+            <tr>
+               <td colspan="4" style="text-align: center;font-weight:700;font-size:20px;">
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @Resource.Passed
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @Resource.Pending
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @Resource.Reject
+                  }
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Code</td>
+               <td colspan="3">@Model.Product_Code</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Name</td>
+               <td>@Model.Product_Name</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Lot_No</td>
+               <td>@Model.Lot_No</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Signature</td>
+               <td></td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Quantity</td>
+               <td>
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  @( " " + Model.UOM_Name)
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Date</td>
+               <td>@Model.Authorized_Date</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Remarks</td>
+               <td>@Model.Remarks</td>
+            </tr>
+         </table>
+      }
+      else if (Model.Product_Status == Material_Status.Pending)
+      {
+         <table cellpadding="5" cellspacing="1" border="1">
+            <tr>
+               <td colspan="4" style="text-align: center;font-weight:700;font-size:20px;">
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @Resource.Passed
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @Resource.Pending
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @Resource.Reject
+                  }
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Code</td>
+               <td colspan="3">@Model.Product_Code</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Name</td>
+               <td>@Model.Product_Name</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Lot_No</td>
+               <td>@Model.Lot_No</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Signature</td>
+               <td></td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Quantity</td>
+               <td>
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  @( " " + Model.UOM_Name)
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Date</td>
+               <td>@Model.Authorized_Date</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Remarks</td>
+               <td>@Model.Remarks</td>
+            </tr>
+         </table>
+      }
+      else if (Model.Product_Status == Material_Status.Reject)
+      {
+         <table cellpadding="5" cellspacing="1" border="1" bgcolor="#bf0707">
+            <tr>
+               <td colspan="4" style="text-align: center;font-weight:700;font-size:20px;">
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @Resource.Passed
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @Resource.Pending
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @Resource.Reject
+                  }
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Code</td>
+               <td colspan="3">@Model.Product_Code</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Product_Name</td>
+               <td>@Model.Product_Name</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Lot_No</td>
+               <td>@Model.Lot_No</td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Signature</td>
+               <td></td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Quantity</td>
+               <td>
+                  @if (Model.Product_Status == Material_Status.Passed)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Pending)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  else if (Model.Product_Status == Material_Status.Reject)
+                  {
+                     @NumUtil.FormatCurrency(Model.Quantity)
+                  }
+                  @( " " + Model.UOM_Name)
+               </td>
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="25%">@Resource.Date</td>
+               <td>@Model.Authorized_Date</td>
+               <td style="text-align:right;font-weight:700;" width="18%">@Resource.Remarks</td>
+               <td>@Model.Remarks</td>
+            </tr>
+         </table>
+      }
+   </div>
+</div>

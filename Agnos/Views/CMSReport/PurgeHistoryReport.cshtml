@@ -1,0 +1,122 @@
+﻿@model Agnos.Models.CMSReportViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Drum_History_Report;
+}
+<script type="text/javascript">
+   function PrintForm() {
+      theForm.action = '@Url.Action("PurgeHistoryReportPrint", "CMSReport")';
+      theForm.method = 'get';
+      theForm.target = '_blank'
+      theForm.submit();
+
+      theForm.action = '@Url.Action("PurgeHistoryReport", "CMSReport")';
+      CloseProgress();
+   };
+
+   function SearchForm() {
+      theForm.action = '@Url.Action("PurgeHistoryReport", "CMSReport")';
+      theForm.method = 'get';
+      theForm.target = '';
+      theForm.submit();
+   };
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Purge_History_Report)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   @using (Html.BeginForm("PurgeHistoryReport", "CMSReport", FormMethod.Get, new { role = "form", id = "theForm" }))
+   {
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Drum_Code),
+                        Html.AppLabelFor(m =>m.Date_From),
+                        Html.AppLabelFor(m =>m.Date_To),
+                        //Html.AppLabelFor(m =>m.Sort_By),
+                    }, 3
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppTextboxFor(m =>m.Drum_Code),
+                        Html.AppTextDateFor(m =>m.Date_From),
+                        Html.AppTextDateFor(m =>m.Date_To),
+                        //Html.AppDropDownListFor(m =>m.Sort_By,Model.cSortlist),
+                    }, 3
+                )
+
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppMultiControl(
+                                new MvcHtmlString[] {
+                                       Html.AppButton(Resource.Search, AppButtonType.button, AppColor.green, new { onclick = "SearchForm();"}),
+                                       Html.AppButton(Resource.Print_Form, AppButtonType.button, AppColor.none, new { onclick = "PrintForm();"})
+                                }, 4
+                           )
+                    }, 3
+                )
+         </div>
+      </section>
+   }
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Purge_History_Report</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.purgelist != null)
+         {
+             var headers = new List<GridHeader>();
+             var rows = new List<GridRow>();
+
+             headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+             headers.Add(new GridHeader() { Column_Name = Resource.Drum_Code });
+             headers.Add(new GridHeader() { Column_Name = Resource.Date_Charged });
+             headers.Add(new GridHeader() { Column_Name = Resource.Station, Data_Type = GridDataType.numeric });
+             headers.Add(new GridHeader() { Column_Name = Resource.Weight, Data_Type = GridDataType.amount });
+             headers.Add(new GridHeader() { Column_Name = Resource.Weight, Data_Type = GridDataType.amount });
+             headers.Add(new GridHeader() { Column_Name = Resource.User_Who_Charged });
+
+             var i = 0;
+             foreach (var row in Model.purgelist)
+             {
+                var c = 1;
+                if (Model.purgelistAll != null && !string.IsNullOrEmpty(row.Drum_Code))
+                {
+                   c = Model.purgelistAll.Where(w => w.Drum_Code == row.Drum_Code).Count();
+                }
+                 var grow = new GridRow();
+                 grow.Item.Add(new GridItem() { Value = (i + 1) });
+                 grow.Item.Add(new GridItem() { Value = row.Drum_Code });
+                 grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayFullDateTime(row.Create_On) });
+                 grow.Item.Add(new GridItem() { Value = row.Filling_Station_ID.HasValue && row.CMS_Filling_Station != null ? row.CMS_Filling_Station.Station_Code : "" });
+                 grow.Item.Add(new GridItem() { Value = row.Initial_Weight });
+                 grow.Item.Add(new GridItem() { Value = row.Final_Weight });
+                 grow.Item.Add(new GridItem() { Value = row.Create_By });
+                 rows.Add(grow);
+                 i++;
+             }
+            @Html.AppGridData("ldatatable", headers, rows, null);
+         }
+
+      </div>
+   </section>
+</div>

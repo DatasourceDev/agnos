@@ -1,0 +1,328 @@
+﻿@model Agnos.Models.MaterialRejectInfoViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Reject_Matrials_Report;
+}
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table style="width: 100%;" class="header-form">
+         <tr>
+            <td width="30%"></td>
+            <td style="font-weight:700;" width="40%">
+               <br /><br />
+               <h3><span style="text-align: center;text-decoration:underline">@Resource.Reject_Matrials_Report</span></h3>
+            </td>
+            <td width="30%" style="text-align:right;font-size: 8px;">
+               F006/06<br />
+               AP03 Appendix 5.6
+            </td>
+         </tr>
+      </table>
+      <table cellpadding="4" cellspacing="1"  style="width: 100%;" border="1">
+         <tr>
+            <td valign="top">
+               @Resource.Lot_No : @Model.Lot_No <br />
+               @Resource.Quantity : @NumUtil.FormatCurrency(Model.Quantity) @Model.UOM_Name
+            </td>
+            <td valign="top">@Resource.Date : @Model.Create_On</td>
+            <td valign="top">@Resource.RMR_No : @Model.RMR_No</td>
+         </tr>
+
+      </table>
+      <table cellpadding="2" cellspacing="1" style="width:100%;" border="1">
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td width="15%">@Resource.Reject_From :</td>
+                     <td width="5%">
+                        @if (Model.Reject_From == Reject_From_Type.Customer)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td>@Resource.Customer : @Model.Reject_Customer_Name</td>
+                  </tr>
+                  <tr>
+                     <td>(@Resource.Pls_Tick)</td>
+                     <td>
+                        @if (Model.Reject_From == Reject_From_Type.Supplier)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td>@Resource.Supplier : @Model.Reject_Supplier_Name</td>
+                  </tr>
+                  <tr>
+                     <td></td>
+                     <td>
+                        @if (Model.Reject_From == Reject_From_Type.Inhouse)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td>@Resource.Inhouse (@Resource.Location, @Resource.Operation) : @Model.Reject_Inhouse_Location</td>
+                  </tr>
+
+               </table>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td colspan="2">@Resource.Defect_Description :  @Model.Defect_Description</td>
+                    
+                  </tr>
+                   @if (string.IsNullOrEmpty(Model.D8_No) || string.IsNullOrEmpty(Model.D8_No.Trim()))
+                   {
+                       Model.D8_No = Resource.NA;
+                   }
+                  <tr>
+                     <td colspan="2"><br /><br /></td>
+                  </tr>
+                  <tr>
+                     <td>@Resource.Raised_By_QA_Staff : @Model.QA_Staff</td>
+                     <td>@Resource.D8_No : @Model.D8_No</td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td colspan="4">@Resource.Disposition :</td>
+                  </tr>
+
+                  <tr>
+                     <td width="3%">
+                        @if (Model.Disposition_RTS.HasValue && Model.Disposition_RTS.Value)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td width="15%">@Resource.RTS</td>
+                     <td width="3%">
+                        @if (Model.Disposition_Rework.HasValue && Model.Disposition_Rework.Value)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td width="15%">@Resource.Disposition_Rework</td>
+                  </tr>
+                  <tr>
+                     <td>
+                        @if (Model.Disposition_Scrap.HasValue && Model.Disposition_Scrap.Value)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td>@Resource.Disposition_Scrap</td>
+                     <td>
+                        @if (Model.Disposition_UAI.HasValue && Model.Disposition_UAI.Value)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td>@Resource.Disposition_UAI</td>
+                  </tr>
+                  <tr>
+                     <td>
+                        @if (Model.Disposition_Others.HasValue && Model.Disposition_Others.Value)
+                        {
+                        <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                        }
+                        else
+                        {
+                        <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                        }
+                     </td>
+                     <td colspan="3">@Resource.Others : @Model.Disposition_Others_Description</td>
+                  </tr>
+                   <tr>
+                       <td>
+                           @if (Model.Reject_Status == Reject_Status.Pass)
+                           {
+                               <img src="@Server.MapPath("~/Image/checked.png")" width="12" height="12" />
+                           }
+                           else
+                           {
+                               <img src="@Server.MapPath("~/Image/unchecked.png")" width="12" height="12" />
+                           }
+                       </td>
+                       <td colspan="3">@Resource.NA</td>
+                   </tr>
+                  <tr>
+                     <td colspan="4"><br /></td>
+                  </tr>
+                  <tr>
+                     <td colspan="4">@Resource.Instructions : @Model.Instructions</td>
+                  </tr>
+                  <tr>
+                     <td colspan="4"><br /><br /></td>
+                  </tr>
+               </table>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td valign="top" width="30%">
+                        <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                           <tr>
+                              <td>@Resource.Approval_By_Management :</td>
+                           </tr>
+                           <tr>
+                              <td>@Resource.Signed_By_MRT :</td>
+                           </tr>
+                        </table>
+                     </td>
+                     <td >
+                        <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                           @if (Model.GM_Approval.HasValue)
+                           {
+                              <tr>
+                                 <td width="60%">@Model.GM_Approval_Name</td>
+                                 <td>@Resource.Date : @Model.GM_Approval_Date</td>
+                              </tr>
+                           }
+                           @if (Model.PD.HasValue && Model.PD.Value)
+                           {
+                              <tr>
+                                 <td>1. @Resource.PD : @Model.PD_Approval_Name</td>
+                                 <td>@Resource.Date : @Model.PD_Date</td>
+                              </tr>
+                           }
+                           @if (Model.QA.HasValue && Model.QA.Value)
+                           {
+                              <tr>
+                                 <td>2. @Resource.QA : @Model.QA_Approval_Name</td>
+                                 <td>@Resource.Date : @Model.QA_Date</td>
+                              </tr>
+                           }
+                           @if (Model.Logistics.HasValue && Model.Logistics.Value)
+                           {
+                              <tr>
+                                 <td>3. @Resource.Logistics : @Model.Logistics_Approval_Name</td>
+                                 <td>@Resource.Date : @Model.Logistics_Date</td>
+                              </tr>
+                           }
+                           @if (Model.Sales.HasValue && Model.Sales.Value)
+                           {
+                              <tr>
+                                 <td>4. @Resource.Sales : @Model.Sales_Approval_Name</td>
+                                 <td>@Resource.Date : @Model.Sales_Date</td>
+                              </tr>
+                           }
+
+                        </table>
+                     </td>
+
+                  </tr>
+                  </table>
+</td>
+         </tr>
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td valign="top">@Resource.Disposition_Action_By : @Model.Disposition_Action_By  </td>
+                     <td valign="top" width="30%">@Resource.Date : @Model.Disposition_Date </td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="1" style="width:100%;" border="0">
+                  <tr>
+                     <td colspan="4">@Resource.Re_Inspection_On_Rework : @Model.Re_Inspection_On_Rework</td>
+                  </tr>
+                  <tr>
+                     <td colspan="2">
+                        @{
+                           var roundpass = "";
+                           var roundfail = "";
+                           var roundna = "";
+                           if (Model.Reject_Status == Reject_Status.Pass)
+                           {
+                              roundpass = "bordercolor=#f00 borderradius=8";
+                           }
+                           if (Model.Reject_Status == Reject_Status.Fail)
+                           {
+                              roundfail = "bordercolor=#f00 borderradius=8";
+                           }
+                           if (Model.Reject_Status == Reject_Status.NA)
+                           {
+                              roundna = "bordercolor=#f00 borderradius=8";
+                           }
+                        }
+                        <table cellpadding="0" cellspacing="0" border="0">
+                           <tr>
+                              <td width="15%" style="text-align:center" @roundpass>@Resource.Passed</td>
+                              <td width="2%" style="text-align:center">/</td>
+                              <td width="15%" style="text-align:center" @roundfail>@Resource.Failed</td>
+                              <td width="2%" style="text-align:center">/</td>
+                              <td width="15%" style="text-align:center" @roundna>@Resource.NA</td>
+                              <td width="51%" style="text-align:center">
+                                 (@Resource.Please_Circle_As_Appropriate)
+                              </td>
+                           </tr>
+                        </table>
+                     </td>
+                      @if (string.IsNullOrEmpty(Model.Carried_Out_By) || string.IsNullOrEmpty(Model.Carried_Out_By.Trim()))
+                      {
+                          Model.Carried_Out_By = Resource.NA;
+                      }
+                     <td colspan="2">
+                        @Resource.Carried_Out_By : @Model.Carried_Out_By
+                     </td>
+
+                  </tr>
+                  <tr>
+                     <td colspan="2"></td>
+                     <td colspan="2">@Resource.Carried_Out_Date : @Model.Carried_Out_Date</td>
+                  </tr>
+               </table>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <table cellpadding="2" cellspacing="1" style="width:100%;color:#000" border="0">
+                  <tr>
+                     <td valign="top">@Resource.Reviewed_Date : @Model.Review_Date  <br /><br /></td>
+                     <td valign="top" width="35%" style="text-align:right">@Resource.Remarks :  @Model.Remarks <br /><br /></td>
+                  </tr>
+                  <tr><td><br /></td></tr>
+               </table>
+            </td>
+         </tr>
+      </table>
+
+
+   </div>
+</div>

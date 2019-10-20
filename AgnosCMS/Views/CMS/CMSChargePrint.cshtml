@@ -1,0 +1,76 @@
+﻿@model AgnosCMS.Models.CMSChargeViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.CMS_Charge;
+   Layout = null;
+}
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+         <tr>
+            <td style="width:30%"><strong>@Resource.Total_Quatity_On_Hand:</strong> </td>
+            <td style="width:40%"></td>
+            <td style="width:30%;text-align:right"><strong>@Resource.Date_Printed:</strong> @DateUtil.ToDisplayDate(Model.currentdate)</td>
+         </tr>
+         <tr>
+            <td><strong>@Resource.Product_Code:</strong> @Model.Product_Code</td>
+            <td></td>
+            <td></td>
+            @*<td style="text-align:right"><strong>@Resource.Sort_By:</strong> @Resource.Drum_Code</td>*@
+         </tr>
+         <tr>
+            <td> </td>
+            <td style="text-align:center"><h3 style="text-decoration:underline"><strong>@Resource.Inventory_Report</strong></h3></td>
+            <td> </td>
+         </tr>
+      </table>
+      <br />
+      <table cellpadding="2" cellspacing="2" style="width:100%;" border="0">
+         <tr>
+            <td valign="top"><strong>@Resource.Drum_Code</strong> </td>
+            <td valign="top"><strong>@Resource.Lot_No</strong> </td>
+            <td valign="top" style="text-align:right"><strong>@Resource.Initial_Weight</strong> </td>
+            <td valign="top" style="text-align:right"><strong>@Resource.Final_Weight</strong> </td>
+            <td valign="top" style="text-align:right"><strong>@Resource.Actual_Weight </strong> </td>
+            <td valign="top" style="text-align:right"><strong>@Resource.No_Charged</strong> </td>
+            <td valign="top" style="text-align:right"><strong>@Resource.Max_Charging</strong> </td>
+            <td valign="top" style="text-align:center;"><strong>@Resource.Station</strong> </td>
+            <td valign="top"><strong>@Resource.Date_Charged</strong> </td>
+         </tr>
+         @if (Model.chargelist != null)
+         {
+            var even = false;
+            var bgcolor = "#eee";
+            foreach (var charge in Model.chargelist)
+            {
+               <tr>
+                  <td valign="top" bgcolor="@bgcolor">@charge.Drum_Code </td>
+                  <td valign="top" bgcolor="@bgcolor">@charge.Lot_No </td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:right">@NumUtil.FormatCurrency(charge.Initial_Weight) </td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:right">@NumUtil.FormatCurrency(charge.Final_Weight)</td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:right">  </td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:right">@NumUtil.FormatCurrency(charge.No_Of_Charging) </td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:right">@NumUtil.FormatCurrency(charge.Max_No_Of_Charging)</td>
+                  <td valign="top" bgcolor="@bgcolor" style="text-align:center">@charge.CMS_Filling_Station.Station_Code </td>
+                  <td valign="top" bgcolor="@bgcolor">@DateUtil.ToDisplayDateTime(charge.Create_On) </td>
+
+               </tr>
+
+               if (even)
+               {
+                  bgcolor = "#eee";
+               }
+               else
+               {
+                  bgcolor = "#fff";
+               }
+               even = !even;
+            }
+         }
+
+      </table>
+   </div>
+</div>

@@ -1,0 +1,138 @@
+﻿@model Agnos.Models.MaterialViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+@{
+   ViewBag.Title = Resource.Material;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+@using (Html.BeginForm("Material", "Material", FormMethod.Get, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.AppPageHeader(Resource.Incoming_Raw_Material)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Date_From),
+                           @Html.AppLabelFor(m =>m.Date_To)
+
+                       }, 3
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m =>m.Product_Code, Model.cProductlist),
+                           @Html.AppTextDateFor(m =>m.Date_From),
+                           @Html.AppTextDateFor(m =>m.Date_To),
+                           @Html.AppButton(Resource.Search,AppButtonType.submit,AppColor.green )
+                       }, 3
+                  )
+         </div>
+         <div>
+            <div class="tile-header">
+               <h1 style="cursor:pointer">Print Label</h1>
+               <div>
+                  <a href="@Url.Action("PrintPendingLabel", "Material")" target="_blank" style="color:black">Print Pending</a>
+                  <a href="@Url.Action("PrintPassLabel", "Material")" target="_blank" style="color:green">Print Pass</a>
+                  <a href="@Url.Action("PrintRejectLabel", "Material")" target="_blank" style="color:red">Print Reject</a>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <section class="tile ">
+         <div class="tile-header ">
+            <h1>@Resource.Incoming_Raw_Material</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+         </div>
+         <div class="tile-body">
+            @if (Model.RawMaterialList != null)
+            {
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+               headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+               headers.Add(new GridHeader() { Column_Name = Resource.Receiving_Date });
+               headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.Total_Receiving, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Unit_of_Measure });
+               headers.Add(new GridHeader() { Column_Name = Resource.Pass, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = "", Data_Type = GridDataType.usercontrol, Width = "50px" });
+               headers.Add(new GridHeader() { Column_Name = Resource.Pending, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = "", Data_Type = GridDataType.usercontrol, Width = "50px" });
+               headers.Add(new GridHeader() { Column_Name = Resource.Reject, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = "", Data_Type = GridDataType.usercontrol, Width = "50px" });
+               headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "80px" });
+
+               foreach (var row in Model.RawMaterialList)
+               {
+                  var grow = new GridRow();
+                  var uomname = "";
+                  if (row.Global_Lookup_Data != null)
+                  {
+                     uomname = row.Global_Lookup_Data.Name;
+                  }
+
+                  grow.Item.Add(new GridItem() { Value = row.Product_Code });
+                  grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Receiving_Date) });
+                  grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.Total_Receiving });
+                  grow.Item.Add(new GridItem() { Value = uomname });
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Pass });
+                  if (row.Status_Pass == true)
+                  {
+                     grow.Item.Add(new GridItem() { Value = Html.AppActionLink("Print Form", Url.Action("MaterialForm", new { pRawID = row.Raw_Material_ID, pSelStatus = Material_Status.Passed }), AppColor.none, new { Target = ActionTarget._blank }), });
+                  }
+                  else
+                  {
+                     grow.Item.Add(new GridItem());
+                  }
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Pending });
+                  if (row.Status_Pending == true)
+                  {
+                      grow.Item.Add(new GridItem() { Value = Html.AppActionLink("Print Form", Url.Action("MaterialForm", new { pRawID = row.Raw_Material_ID, pSelStatus = Material_Status.Pending }), AppColor.none, new { Target = ActionTarget._blank }) });
+                  }
+                  else
+                  {
+                     grow.Item.Add(new GridItem());
+                  }
+                  grow.Item.Add(new GridItem() { Value = row.Qty_Reject });
+                  if (row.Status_Reject == true)
+                  {
+                      grow.Item.Add(new GridItem() { Value = Html.AppActionLink("Print Form", Url.Action("MaterialForm", new { pRawID = row.Raw_Material_ID, pSelStatus = Material_Status.Reject }), AppColor.none, new { Target = ActionTarget._blank }) });
+                  }
+                  else
+                  {
+                     grow.Item.Add(new GridItem());
+                  }
+                  grow.Item.Add(new GridItem() { Value = Html.AppActionLink(Resource.Detail, Url.Action("MaterialInfo", "Material", new { pRawID = row.Raw_Material_ID, operation = Operation.U }), AppColor.orange) });
+                  rows.Add(grow);
+               }
+               @Html.AppGridData("Materialdatatable", headers, rows, @Html.AppGridAddButton(Resource.Btn_Add, Url.Action("Materialinfo", "Material", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView }))
+            }
+         </div>
+      </section>
+
+
+   </div>
+}

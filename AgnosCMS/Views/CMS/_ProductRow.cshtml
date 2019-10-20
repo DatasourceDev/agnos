@@ -1,0 +1,84 @@
+﻿@model AgnosCMS.Models.CMSDeliveryDetail
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Control;
+@using AppFramework.Util;
+@using AgnosCMS.Common;
+@if (Model != null)
+{
+    var i = Model.Index;
+    if (Model.cDrum_Codelist == null)
+    {
+        Model.cDrum_Codelist = new List<ComboRow>();
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            $(".chosen-select").chosen({ disable_search_threshold: 10 });
+        });
+    </script>
+    if (Model.Row_Type == RAction.Delete)
+    {
+        <script type="text/javascript">
+            $(function () {
+                $('#' + 'lrow-@i').hide();
+            });
+        </script>
+    }
+    if (Model.Row_Type == null)
+    {
+        @Html.Hidden(NameUtil.GenCMSProduct.GenMapName(i, "Row_Type"), RAction.Add)
+    }
+    else
+    {
+        @Html.Hidden(NameUtil.GenCMSProduct.GenMapName(i, "Row_Type"), Model.Row_Type)
+    }
+    <td class="text-disable">
+        @Html.AppDropDownList(NameUtil.GenCMSProduct.GenMapName(i, "Product_Code"), Model.cProduct_Codelist, Model.Product_Code, new { onchange = "ReloadDrumCode(" + i + ")" })
+    </td>
+    <td class="text-disable">
+        @Html.AppTextboxDecimal(NameUtil.GenCMSProduct.GenMapName(i, "No_Of_Containers"), Model.No_Of_Containers, new { placeholder = Resource.No_Of_Containers, @class = "form-control full-decimal text-right" })
+    </td>
+    <td class="drumcode">
+        <select class="chosen-select form-control  tags drumcode" multiple="" name="@NameUtil.GenCMSProduct.GenMapName(i, "Drum_Code")" id="@NameUtil.GenCMSProduct.GenMapID(i, "Drum_Code")">
+            @if (Model.cDrum_Codelist != null)
+            {
+                foreach (var row in Model.cDrum_Codelist)
+                {
+                    <option value="@row.Text" @(Model.Drum_Code != null && Model.Drum_Code.Contains(row.Text) ? "selected" : "")>@row.Text</option>
+                }
+            }
+            @if (Model.Drum_Code != null)
+            {
+                foreach (var row in Model.Drum_Code.Where(item => item != string.Empty).ToList())
+                {
+                    if (Model.cDrum_Codelist != null)
+                    {
+                        if (!Model.cDrum_Codelist.Select(s => s.Text).Contains(row))
+                        {
+                            <option value="@row" selected>@row</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="@row" selected>@row</option>
+                    }
+                }
+            }
+        </select>
+        <div class="validation-error">
+            @Html.ValidationMessage(NameUtil.GenCMSProduct.GenMapName(i, "Drum_Code"))
+        </div>
+
+    </td>
+    <td>
+        @Html.AppTextDate(NameUtil.GenCMSProduct.GenMapName(i, "Date_Delivered"), Model.Date_Delivered, new { placeholder = Resource.Date_Delivered, @readonly = true })
+    </td>
+    <td style="width:90px" class=" text-center text-disable">
+        @Html.Hidden(NameUtil.GenCMSProduct.GenMapID(i, "CMS_Delivery_Detail_ID"), Model.CMS_Delivery_Detail_ID)
+        @Html.AppActionLink("", "#", AppColor.danger, new { onclick = "Delete_Product_Onclick('" + i + "')", icon = "fa fa-times" })
+    </td>
+}

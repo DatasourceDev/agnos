@@ -1,0 +1,202 @@
+﻿@model Agnos.Models.LotNumberGenViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Lot_Number_Generation;
+   var defDate = DateUtil.ToDate(Model.Default_Date).Value;
+   var defYear = defDate.Year.ToString().Substring(2, 2);
+   var defDay = defDate.Day.ToString("00");
+   var defMonth = DateUtil.GetFullMonth(defDate.Month).Substring(0, 1);
+   var defNo = Model.Default_No.ToString("00");
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   $(function () {
+
+      if ('@ViewData.ModelState.IsValid' == "False") {
+         $('#modal-lotnumber').modal('show');
+      }
+   })
+
+   function ControlClear() {
+      $('#operation').val('@Operation.C');
+      $('#Lot_Number_ID').val(0);
+      $('#Product_Code').val('');
+      $('#Template_ID').val('');
+
+      $('#Lot_Number_Date').val('@Model.Default_Date');
+
+      if ($("#Product_Code option").length > 0)
+         $("#Product_Code").get(0).selectedIndex = 0;
+
+      $('#Product_Code').trigger("chosen:updated");
+      $('#Template_ID').trigger("chosen:updated");
+      $('#Product_Name').trigger("chosen:updated");
+
+      //var pcode = $("#Product_Code :selected").text().trim();
+      //$('#Lot_No').val(pcode + '@defYear' + '@defMonth' + '@defDay' + '@defNo');
+      $('.validation-error').remove();
+
+      Product_Onchange();
+   }
+
+   function EditLotNumber(pltID, pCode, pLotNo, pDate, tID, pTemplateID) {
+      $('#operation').val('@Operation.U');
+
+      $('#Lot_Number_ID').val(pltID);
+      $('#Product_Code').val(pCode);
+      $('#Lot_No').val(pLotNo);
+      $('#Lot_Number_Date').val(pDate);
+      $('#Template_ID').val(pTemplateID);
+      $('#Product_Code').trigger("chosen:updated");
+      $('#Template_ID').trigger("chosen:updated");
+
+      $('.validation-error').remove();
+   }
+
+   function Product_Onchange() {
+      var pcode = $('#Product_Code').val();
+      $.ajax({
+         type: 'Get',
+         url: 'GetDefaultLotNo',
+         contentType: 'application/json; charset=utf-8',
+         data: { pProductCode: pcode },
+         dataType: 'json',
+         success: function (data) {
+            if (data != null) {
+               var maxlot = data.maxlot;
+               if (maxlot != null && data.maxlot.toString().length == 1)
+                  maxlot = "0" + maxlot;
+               $('#Lot_No').val(pcode.trim() + '@defYear' + '@defMonth' + '@defDay' + maxlot);
+            }
+         }
+      });
+      Product_Onchange_Temp()
+   }
+
+   function Product_Onchange_Temp() {
+      var pcode = $("#Product_Code").val();
+      if (pcode != null && pcode != "") {
+         $.ajax({
+            type: "GET",
+            url: "GetTemplateLogsheetByProductCode",
+            data: { Product_Code: $('#Product_Code').val(), HasBlank: false },
+            //dataType: "script"
+         }).done(function (msg) {
+            //alert(msg);
+            $('#UOM_ID').val(msg.uomid);
+            $('#UOM_ID').trigger("chosen:updated");
+            $('#appConfig').html(msg);
+         });
+      }
+   }
+
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("LotNumber", "Template", new { operation = Operation.D })' + '&Lot_Number_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+</script>
+
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Lot_Number_Generation)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Lot_Number_Generation</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @Html.AppActionLink(Resource.Print_Report, Url.Action("GetLotNumberPrint", "Template"), AppColor.none, new { Target = ActionTarget._blank })
+         @if (Model.LotNumberList != null)
+         {
+            var headers = new List<GridHeader>();
+            var rows = new List<GridRow>();
+
+            headers.Add(new GridHeader() { Column_Name = Resource.Product_Code });
+            headers.Add(new GridHeader() { Column_Name = Resource.Template_Logsheet });
+            headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+            headers.Add(new GridHeader() { Column_Name = Resource.Date });
+            headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol });
+            foreach (var row in Model.LotNumberList)
+            {
+               var grow = new GridRow();
+               grow.Item.Add(new GridItem() { Value = (row.Product_Code != "0" ? row.Product_Code : "") });
+               var display = "";
+               if (row.Template_ID != null && row.Template_Logsheet != null)
+               {
+                  display = row.Template_Logsheet.Template_Name;
+               }
+               grow.Item.Add(new GridItem() { Value = display });
+               grow.Item.Add(new GridItem() { Value = row.Lot_No });
+               grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayDate(row.Lot_Number_Date) });
+               grow.Item.Add(new GridItem()
+               {
+                  Value = Html.AppMultiButton(
+                      new MvcHtmlString[] {
+                         Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Lot_Number_ID+"');", @disabled = readView}),
+                         //Html.AppActionLink(Resource.Delete, Url.Action("LotNumber","Template", new {operation = Operation.D,Lot_Number_ID = row.Lot_Number_ID }) , AppColor.danger, new{ @disabled = readView })
+                      })
+               });
+               rows.Add(grow);
+            }
+
+            @Html.AppGridData("ltnumberdatatable", headers, rows, Html.AppGridAddModalButton(Resource.Btn_Add, "modal-lotnumber", AppColor.greensea, new { onclick = "ControlClear();", @disabled = readView }))
+
+         }
+      </div>
+   </section>
+</div>
+
+@using (Html.BeginForm("LotNumber", "Template", FormMethod.Post, new { role = "form" }))
+{
+   @Html.AntiForgeryToken()
+   @Html.HiddenFor(m => m.Modify)
+   @Html.HiddenFor(m => m.operation)
+   @Html.HiddenFor(m => m.Lot_Number_ID)
+   <div id="appConfig"></div>
+   <div class="modal fade" id="modal-lotnumber" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h4 class="modal-title"><strong>@Resource.Lot_Number_Generation</strong></h4>
+            </div>
+            <div class="modal-body">
+               @Html.AppLabelFor(m => m.Product_Code)
+               @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new { onchange = "Product_Onchange()" })
+
+               @Html.AppLabelFor(m => m.Template_ID)
+               @Html.AppDropDownListFor(m => m.Template_ID, Model.cTmplist, new { id = "Template_ID" })
+
+               @Html.AppLabelFor(m => m.Lot_Number_Date)
+               @Html.AppTextboxFor(m => m.Lot_Number_Date, new { @readonly = true })
+               @Html.AppLabelFor(m => m.Lot_No)
+               @Html.AppTextboxFor(m => m.Lot_No)
+
+            </div>
+            <div class="modal-footer">
+               @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { @data_dismiss = "modal", @aria_hidden = true })
+               @Html.AppButton(Resource.Save_And_View_Detail, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "logsheet" })
+               @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary)
+            </div>
+         </div>
+      </div>
+   </div>
+}
+

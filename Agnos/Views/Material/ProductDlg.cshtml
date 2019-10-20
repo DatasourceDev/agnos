@@ -1,0 +1,68 @@
+﻿@model Agnos.Models.ProductTransactionViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+<script type="text/javascript">
+   function Product_Transaction_OnSelect(tranID, rDate, qty, lotNo, expiringDate, unit) {
+      var decqty = parseFloat(qty);
+      $("#Transaction_ID").val(tranID);
+      $("#Receiving_Date").val(rDate);
+      $("#Total_Receiving").val(decqty);
+      $("#Lot_No").val(lotNo);
+      $("#btnProductDlgClose").get(0).click();
+      $("#Quantity").val(decqty);
+      $("#Expiring_Date").val(expiringDate);
+      $("#Unit").val(unit);
+   }
+
+</script>
+@Html.HiddenFor(m => m.Transaction_ID)
+
+<div class="modal fade" id="modal-product" tabindex="-1" role="dialog" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h4 class="modal-title"><strong>Show Product transaction from Exchequer</strong></h4>
+         </div>
+         <div class="modal-body">
+            @if (Model.ProductTrancList != null)
+            {
+               var headers = new List<GridHeader>();
+               var rows = new List<GridRow>();
+
+               headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+               headers.Add(new GridHeader() { Column_Name = Resource.Total_Receiving, Data_Type = GridDataType.amount });
+               headers.Add(new GridHeader() { Column_Name = Resource.Unit });
+               headers.Add(new GridHeader() { Column_Name = Resource.Expiry_Date });
+               headers.Add(new GridHeader() { Column_Name = Resource.Choose, Data_Type = GridDataType.usercontrol, Width = "50px" });
+
+               var i = 0;
+               foreach (var row in Model.ProductTrancList)
+               {
+                  var grow = new GridRow();
+                  grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                  grow.Item.Add(new GridItem() { Value = row.Total_Receiving });
+                 
+                  grow.Item.Add(new GridItem() { Value = row.Unit });
+                  grow.Item.Add(new GridItem() { Value = row.Expiring_Date });
+                  grow.Item.Add(new GridItem() { Value = Html.AppButton(Resource.Choose, AppButtonType.button,  AppColor.info, new { value = row.Transaction_ID, id = "tranc-" + i, @onclick = "Product_Transaction_OnSelect('" + row.Transaction_ID + "','" + DateUtil.ToDisplayDate(row.Receiving_Date) + "','" + (row.Total_Receiving.HasValue ? row.Total_Receiving.Value : 0) + "','" + row.Lot_No + "','" + row.Expiring_Date + "','" + row.Unit + "')" }) });
+                  rows.Add(grow);
+                  i++;
+               }
+
+               @Html.AppGridData("pdatatable", headers, rows)
+            }
+         </div>
+         <div class="modal-footer ">
+            @Html.AppButton(Resource.Close, AppButtonType.button, AppColor.none, new { @id = "btnProductDlgClose", @data_dismiss = "modal", @aria_hidden = true })
+         </div>
+      </div>
+
+   </div>
+</div>
+

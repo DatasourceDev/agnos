@@ -1,0 +1,149 @@
+﻿@model Agnos.Models.TemplateLogsheetViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Template_Logsheet;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+<script type="text/javascript">
+   $(function () {
+      if ('@ViewData.ModelState.IsValid' == "False") {
+         $('#btnOpenClone').get(0).click();
+      }
+   });
+   function confirmClone(pID) {
+      if (confirm('@Resource.Message_Clone_Msg')) {
+         if ($("#Template_ID").val() != null) {
+            theForm.submit;
+         }
+      }
+   }
+   function openClone(pID) {
+      $("#btnOpenClone").get(0).click();
+      $("#Template_ID").val(pID);
+   }
+
+   function confirmDelete(pID) {
+      if (confirm('@Resource.Message_Delete_Msg')) {
+         if (pID > 0) {
+            var url = '@Url.Action("TemplateLogsheetInfo", "Template", new { operation = Operation.D })' + '&Template_ID=' + pID;
+            window.location.href = url;
+         }
+      }
+   }
+
+</script>
+
+<div class="main">
+   @Html.AppPageHeader(Resource.Template_Logsheet)
+   @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+   @using (Html.BeginForm("TemplateLogsheet", "Template", FormMethod.Get, new { role = "form" }))
+   {
+      <section class="tile">
+         <div class="tile-header">
+            <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+            <div class="controls">
+               <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+            </div>
+         </div>
+
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.search_Template_Code),
+                        Html.AppLabelFor(m => m.search_Template_Name)
+                    }, 4
+                )
+            @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppTextboxFor(m =>m.search_Template_Code),
+                        Html.AppTextboxFor(m =>m.search_Template_Name),
+                        Html.AppButton(Resource.Search, AppButtonType.submit, AppColor.green)
+                    }, 4
+                )
+
+         </div>
+
+      </section>
+   }
+
+   <section class="tile ">
+      <div class="tile-header ">
+         <h1>@Resource.Template_Logsheet</h1>
+         <div class="controls">
+            <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+         </div>
+      </div>
+      <div class="tile-body">
+         @if (Model.Tmplogsheetlist != null)
+            {
+                var headers = new List<GridHeader>();
+                var rows = new List<GridRow>();
+
+                headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                headers.Add(new GridHeader() { Column_Name = Resource.Template_Code });
+                headers.Add(new GridHeader() { Column_Name = Resource.Template_Name });
+                headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "210px" });
+
+                var i = 0;
+                foreach (var row in Model.Tmplogsheetlist)
+                {
+                    var grow = new GridRow();
+                    grow.Item.Add(new GridItem() { Value = (i + 1) });
+                    grow.Item.Add(new GridItem() { Value = row.Template_Code });
+                    grow.Item.Add(new GridItem() { Value = row.Template_Name });
+                    grow.Item.Add(new GridItem()
+                    {
+                        Value = Html.AppMultiButton(
+                            new MvcHtmlString[] {
+                                Html.AppActionLink(Resource.Detail, Url.Action("TemplateLogsheetInfo","Template", new { operation = Operation.U,Template_ID = row.Template_ID }) , AppColor.orange),
+                                Html.AppButton(Resource.Clone, AppButtonType.button, AppColor.greensea, new { onclick = "openClone('"+row.Template_ID+"');", @disabled = readView }),
+                                Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Template_ID+"');", @disabled = readView }),
+                            })
+                    });
+                    rows.Add(grow);
+                    i++;
+                }
+
+         @Html.AppGridData("ldatatable", headers, rows, Html.AppGridAddButton(Resource.Btn_Add, Url.Action("TemplateLogsheetInfo", "Template", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView  }))
+            }
+
+      </div>
+   </section>
+   @using (Html.BeginForm("TemplateLogsheet", "Template", FormMethod.Post, new { role = "form", id = "theForm" }))
+   {
+      <input type="hidden" id="operation" name="operation" value="@Operation.U" />
+      <input type="hidden" id="Template_ID" name="Template_ID" value="" />
+      <a id="btnOpenClone" href="#modal-clone" role="button" data-toggle="modal" style="display:none;"></a>
+      <div class="modal fade" id="modal-clone" tabindex="-1" role="dialog" aria-labelledby="modalConfirmClone" aria-hidden="true">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h3 class="modal-title" id="modalConfirmClone"><strong>@Resource.Clone @Resource.Template_Logsheet</strong></h3>
+               </div>
+               <div class="modal-body">
+                  @Html.AppLabelFor(m =>m.Template_Code)
+                  @Html.AppTextboxFor(m => m.Template_Code)
+                  @Html.AppLabelFor(m => m.Template_Name)
+                  @Html.AppTextboxFor(m =>m.Template_Name)
+               </div>
+               <div class="modal-footer">
+                  @Html.AppButton(Resource.Cancel, AppButtonType.button, AppColor.none, new { id = "btn_Cancel_field", @data_dismiss = "modal", @aria_hidden = true })
+                  @Html.AppButton(Resource.Save_Changes, AppButtonType.submit, AppColor.primary, new { name = "tabAction", value = "field" })
+               </div>
+            </div>
+         </div>
+         <div class="md-overlay"></div>
+      </div>
+   }
+
+</div>

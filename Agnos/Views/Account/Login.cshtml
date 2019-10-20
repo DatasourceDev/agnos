@@ -1,0 +1,77 @@
+﻿@model Agnos.Models.LoginViewModel
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Login;
+   ViewBag.ReturnUrl = Url.Action("Index", "Home");
+}
+<script type="text/javascript">
+   $(function () {
+      $("#content").addClass('full-page bg-8');
+      $("#navbar").hide();
+   });
+
+   function ForgotPassword() {
+      var email = $("#Email_Address").val();
+      if (email != null && email.trim() != '') {
+         $('#divloading').show();
+         $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ForgotPassword", "Account")',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ email: email }),
+            dataType: 'json',
+            success: function (data) {
+               if (data != null) {
+                  alert(data.Msg);
+               }
+               $('#divloading').hide();
+            }
+         });
+      } else {
+         alert("Enter any recovery email associated with your account!");
+      }
+   }
+</script>
+
+@using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-signin", role = "form", id = "form-signin" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="login-block">
+      <section class="tile">
+         <div class="tile-body">
+            <div class="row">
+               <div class="col-md-12">
+                  <h3>@Resource.Login</h3>
+               </div>
+            </div>
+            @Html.AppTextboxFor(m => m.Email_Address)
+            @Html.AppPasswordFor(m => m.Password)
+            @*@Html.AppMessageFor(m =>m.Message)*@
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+               <div class="alert alert-red">
+                  @Model.Message
+               </div>
+            }
+            <div class="row">
+               <div class="col-md-12">
+                  @Html.AppButton(Resource.Login, AppButtonType.submit, AppColor.greensea)
+                  @Html.AppButton(Resource.Cancel, AppButtonType.reset)
+                  @*@Html.AppActionLink("Register",  Url.Action("Register", "Account"), AppColor.none)*@
+               </div>
+               <div class="col-md-12 text-center">
+                  <a href="#" onclick="ForgotPassword()" style="color:black">@Resource.Forgot_Password</a>
+               </div>
+            </div>
+            <div id="divloading" style="display:none"><img src="~/Image/loader_square_small.gif" /></div>
+         </div>
+      </section>
+   </div>
+}
+
+
+
+

@@ -1,0 +1,53 @@
+﻿@model Agnos.Models.MaterialInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using SBSResourceAPI;
+
+<div class="modal fade" id="modal-print" tabindex="-1" role="dialog" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h4 class="modal-title"><strong>Print Label</strong></h4>
+         </div>
+         <div class="modal-body">
+            @if (Model.Print_Pass)
+            {
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppCheckBoxFor(m =>m.Print_Pass, new {@disabled = true}),
+                           @Html.AppTextboxDecimalFor(w=>w.Print_Qty_Pass, new {@readonly = true}),
+                           @Html.AppActionLink("Print Label", Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID ,pSelStatus = Material_Status.Passed}) , AppColor.none, new {Target = ActionTarget._blank}),
+                       }, 3
+                  )
+            }
+
+            @if (Model.Print_Pending)
+            {
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppCheckBoxFor(m =>m.Print_Pending, new {@disabled = true}),
+                           @Html.AppTextboxDecimalFor(w=>w.Print_Qty_Pending, new {@readonly = true}),
+                           @Html.AppActionLink("Print Label", Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID,pSelStatus = Material_Status.Pending}) , AppColor.none, new {Target = ActionTarget._blank}),
+                       }, 3
+                  )
+            }
+
+            @if (Model.Print_Reject)
+            {
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppCheckBoxFor(m =>m.Print_Reject, new {@disabled =true}),
+                           @Html.AppTextboxDecimalFor(w=>w.Print_Qty_Reject, new {@readonly = true}),
+                           @Html.AppActionLink(Resource.Print_Form, Url.Action("MaterialForm", new{pRawID = Model.Raw_Material_ID,pSelStatus = Material_Status.Reject}) , AppColor.none, new {Target = ActionTarget._blank}),
+                           @Html.AppActionLink(Resource.Print_Report, Url.Action("MaterialRejectInfo","Material", new{pRawID = Model.Raw_Material_ID,pCode = Model.Product_Code}) , AppColor.none),
+                       }, 3
+                  )
+            }
+
+
+         </div>
+      </div>
+   </div>
+</div>
+

@@ -1,0 +1,37 @@
+﻿@model Agnos.Models.Tmp_Log_Field_Row
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Text;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using Agnos.Common;
+@{
+   var i = Model.i;
+   var f = Model.f;
+}
+<script type="text/javascript">
+   $(function () {
+      $(".chosen-select").chosen({ disable_search_threshold: 10 });
+   });
+</script>
+<div id="divField-@i-@f" class="field-@i field-space">
+   <div class="row">
+      <div class="col-md-3">
+         <h2>@Resource.Field</h2>
+      </div>
+      <div class="col-md-9">
+         <h2 style="text-align:right">
+            @Html.AppButton("", AppButtonType.submit, AppColor.none, new { Icon = "fa fa-arrow-up ", name = "FMove", value = "Up-" + i + "-" + f }) @(f + 1) @Html.AppButton("", AppButtonType.submit, AppColor.none, new { Icon = "fa fa-arrow-down ", name = "FMove", value = "Down-" + i + "-" + f })
+            @Html.AppActionLink("", "#", AppColor.danger, new { onclick = "DeleteField_Onclick('" + i + "','" + f + "')", icon = "fa fa-times" })
+         </h2>
+      </div>
+     
+   </div>
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenFieldName(i, f, "i"), Model.i)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenFieldName(i, f, "f"), Model.f)
+   @Html.Hidden(NameUtil.GenTmpLogsheet.GenFieldName(i, f, "Tmp_Log_Field_ID"), Model.Tmp_Log_Field_ID)
+   @Html.AppDropDownList(NameUtil.GenTmpLogsheet.GenFieldName(i, f, "Field_ID"), Model.cFieldlist, Model.Field_ID, new { onchange="Field_Onchange(this,'"+i+"','"+f+"')" })
+   <input type="hidden" name="@NameUtil.GenTmpLogsheet.GenFieldName(i, f, "RowAction")" id="@NameUtil.GenTmpLogsheet.GenFieldID(i, f, "RowAction")" value="@Model.RowAction" />
+</div>

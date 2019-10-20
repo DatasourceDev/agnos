@@ -1,0 +1,111 @@
+﻿@model Agnos.Models.MaterialWithdrawFormViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = Resource.Raw_Material_Inventory_Record;
+}
+
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      <table style="width: 100%;" class="header-form">
+         <tr>
+            <td width="20%"></td>
+            <td style="font-weight:700;" valign="top">
+               <h4><span style="text-align: center;text-decoration:underline">@Resource.Raw_Material_Inventory_Record</span></h4>
+            </td>
+            <td width="20%" style="text-align:right;font-size: 8px;" valign="top">
+               F266/00
+            </td>
+         </tr>
+      </table>
+      @foreach (var list in Model.lists)
+      {
+         <table cellpadding="5" cellspacing="1" style="width:100%;" border="0">
+            <tr>
+               <td style="text-align:right;font-weight:700;" width="20%">@Resource.Product_Name :</td>
+               <td>
+                  @list.Product_Name
+               </td>
+               <td style="text-align:right;font-weight:700;" width="20%">Storage Tank No. :</td>
+               <td>@list.Tank_No</td>
+            </tr>
+
+            <tr>
+               <td style="text-align:right;font-weight:700;">@Resource.Packaging Type :</td>
+               <td>@list.Packaging_Type_Name</td>
+               <td />
+               <td />
+            </tr>
+            <tr>
+               <td style="text-align:right;font-weight:700;">@Resource.Location :</td>
+               <td>@list.Location</td>
+               <td style="text-align:right;font-weight:700;">Month :</td>
+               <td>@list.Month_Name @(list.Year.HasValue ? " / " + list.Year : "")</td>
+            </tr>
+         </table>
+         <br />
+         <div id="divReportDetail" style="font-size: 8px;">
+            <table cellpadding="5" cellspacing="1" style="width:100%;" border="1">
+               <tr>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Date <br />(DD/MM/YY)</td>
+                  <td style="font-weight:700;text-align:center" colspan="2">Time</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">In Qty</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Lot_No</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Qty Used</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Bal. Qty</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">Adj. Qty</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.PLC</td>
+                  <td style="font-weight:700;text-align:center" rowspan="2">@Resource.Remarks</td>
+               </tr>
+               <tr>
+                  <td style="font-weight:700;text-align:center">Start</td>
+                  <td style="font-weight:700;text-align:center">End</td>
+               </tr>
+
+               @foreach (var row in list.WithdrawMaterialList)
+               {
+                  var uomname = "";
+                  if (row.Global_Lookup_Data != null)
+                  {
+                     uomname = row.Global_Lookup_Data.Name;
+                  }
+                  <tr>
+                     <td width="11%">@DateUtil.ToDisplayDate(row.Withdraw_Date)</td>
+                     <td width="6%">@DateUtil.ToDisplayTime(row.From_Time)</td>
+                     <td width="6%">@DateUtil.ToDisplayTime(row.To_Time)</td>
+                     <td width="10%" style="text-align:right">
+                        @if (row.Transaction_Type.ToLower() == "incoming")
+                        {
+                           @NumUtil.FormatCurrency(row.Qty_Withdraw) @uomname
+                        }
+                        else
+                        {
+                           @Resource.NA
+                        }
+                     </td>
+                     <td width="15%">@row.Finished_Goods_Lot_No</td>
+                     <td width="8%" style="text-align:right">
+                        @if ((row.Transaction_Type.ToLower() == "withdrawal") || (row.Transaction_Type.ToLower() == "transfer"))
+                        {
+                           @NumUtil.FormatCurrency(row.Qty_Withdraw) @uomname
+                        }
+                     </td>
+                     <td style="text-align:right"> @NumUtil.FormatCurrency(row.Qty_Balance) </td>
+                     <td style="text-align:right">
+                        @NumUtil.FormatCurrency(0) @uomname
+                     </td>
+
+                     <td>@(row.PLC.HasValue ? row.User_Profile.Name : "")</td>
+                     <td>
+                        @row.Remarks
+                     </td>
+                  </tr>
+               }
+            </table>
+         </div>
+         <br />
+      }
+
+   </div>
+</div>

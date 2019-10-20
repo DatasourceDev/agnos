@@ -1,0 +1,127 @@
+﻿@model Agnos.Models.CMSChargeViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+
+@{
+    ViewBag.Title = Resource.Filling_Process;
+    var readView = false;
+    if (Model.Modify == null || Model.Modify.Value == false)
+    {
+        readView = true;
+    }
+}
+<script type="text/javascript">
+
+    function confirmDelete(pID) {
+        if (confirm('@Resource.Message_Delete_Msg')) {
+            if (pID > 0) {
+                var url = '@Url.Action("CMSChargeInfo", "CMS", new { operation = Operation.D })' + '&Charge_ID=' + pID;
+                window.location.href = url;
+            }
+        }
+    }
+    function PrintForm() {
+        var url = '@Url.Action("ExcelPrint", "CMS")?Drum_Code=' + $('#Drum_Code').val() + '&Lot_No=' + $('#Lot_No').val();
+        window.open(url, '_blank');
+    }
+</script>
+
+<div class="main">
+    @Html.AppPageHeader(Resource.Filling_Process)
+    @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+
+    @using (Html.BeginForm("CMSCharge", "CMS", FormMethod.Get, new { role = "form" }))
+    {
+        <section class="tile">
+            <div class="tile-header">
+                <h1 style="cursor:pointer">@Resource.Apply_Filter</h1>
+                <div class="controls">
+                    <a href="#" class="minimize"><i class="fa fa-search color-blue"></i></a>
+                </div>
+            </div>
+
+            <div class="tile-body ">
+                @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                        Html.AppLabelFor(m =>m.Drum_Code),
+                        Html.AppLabelFor(m =>m.Lot_No),
+                    }, 3
+                )
+
+                @Html.AppMultiControl(
+                    new MvcHtmlString[] {
+                         Html.AppTextboxFor(m =>m.Drum_Code),
+                         Html.AppTextboxFor(m =>m.Lot_No),
+                         @Html.AppMultiControl(
+                            new MvcHtmlString[] {
+                                 Html.AppMultiControl(
+                                   new MvcHtmlString[] {
+                                      Html.AppButton(Resource.Search, AppButtonType.submit, AppColor.green),
+                                      Html.AppButton(Resource.Print, AppButtonType.button, AppColor.none, new {onclick="PrintForm()"})
+                            }, 6 )
+                            }, 6
+                        )
+                    }, 3
+                )
+
+
+
+            </div>
+        </section>
+    }
+
+    <section class="tile ">
+        <div class="tile-header ">
+            <h1>@Resource.Filling_Process</h1>
+            <div class="controls">
+                <a href="#" class="minimize"><i class="fa fa-chevron-down color-blue"></i></a>
+            </div>
+        </div>
+        <div class="tile-body">
+            @*@Html.AppActionLink(Resource.Print_Form, Url.Action("CMSChargePrint", "CMS"), AppColor.none, new { target = ActionTarget._blank })*@
+            @if (Model.chargelist != null)
+            {
+                var headers = new List<GridHeader>();
+                var rows = new List<GridRow>();
+
+                headers.Add(new GridHeader() { Column_Name = Resource.No, Data_Type = GridDataType.index });
+                headers.Add(new GridHeader() { Column_Name = Resource.Drum_Code });
+                headers.Add(new GridHeader() { Column_Name = Resource.Lot_No });
+                headers.Add(new GridHeader() { Column_Name = Resource.Station });
+                headers.Add(new GridHeader() { Column_Name = Resource.Charge_Date });
+                //headers.Add(new GridHeader() { Column_Name = Resource.Delivery_Status });
+                headers.Add(new GridHeader() { Column_Name = Resource.Action, Data_Type = GridDataType.usercontrol, Width = "180px" });
+
+                var i = 0;
+                foreach (var row in Model.chargelist)
+                {
+                    var grow = new GridRow();
+                    grow.Item.Add(new GridItem() { Value = (i + 1) });
+                    grow.Item.Add(new GridItem() { Value = row.Drum_Code });
+                    grow.Item.Add(new GridItem() { Value = row.Lot_No });
+                    grow.Item.Add(new GridItem() { Value = row.CMS_Filling_Station.Station_Code });
+                    grow.Item.Add(new GridItem() { Value = DateUtil.ToDisplayFullDateTime(row.Create_On) });
+                    //grow.Item.Add(new GridItem() { Value = row.Delivery_Status });
+                    grow.Item.Add(new GridItem()
+                    {
+                        Value = Html.AppMultiButton(
+                            new MvcHtmlString[] {
+                                Html.AppActionLink(Resource.Detail, Url.Action("CMSChargeInfo","CMS", new { operation = Operation.U,Charge_ID = row.Charge_ID }) , AppColor.orange),
+                                Html.AppButton(Resource.Delete, AppButtonType.button, AppColor.danger, new { onclick = "confirmDelete('"+row.Charge_ID+"');", @disabled = readView }),
+                            })
+                    });
+                    rows.Add(grow);
+                    i++;
+                }
+
+                @Html.AppGridData("ldatatable", headers, rows, Html.AppGridAddButton(Resource.Btn_Add, Url.Action("CMSChargeVerify", "CMS", new { operation = Operation.C }), AppColor.greensea, new { @disabled = readView }))
+            }
+
+        </div>
+    </section>
+</div>

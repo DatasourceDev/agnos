@@ -1,0 +1,272 @@
+﻿@model Agnos.Models.MaterialWithdrawInfoViewModels
+@using AgnosModel.Models;
+@using Agnos.Models;
+@using AppFramework.Control;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@{
+   ViewBag.Title = Resource.Material_Withdraw;
+   var readView = false;
+   if (Model.Modify == null || Model.Modify.Value == false)
+   {
+      readView = true;
+   }
+}
+@*<script type="text/javascript">
+       $(function () {
+           $('#From_Time').datetimepicker({
+               language: 'en',
+               pick12HourFormat: true
+           });
+       });
+   </script>*@
+<script type="text/javascript">
+
+   $(function () {
+      //Function Modify
+      if ('@readView' == "True") {
+         Disable('divModifyDetail1');
+         Disable('divModifyDetail2');
+         Disable('divModifyDetail3');
+         $('#btn_Cancel').removeAttr('disabled');
+      }
+
+      if ('@Model.operation' == '@Operation.C') {
+
+         if ('@Model.Product_Code' != null && '@Model.Product_Code' != '') {
+            if ('@Model.Lot_No' == null || '@Model.Lot_No' == '')
+               $('#modal-product').modal('show');
+            else if ('@Model.Total_Receiving' == null || '@Model.Total_Receiving' == '')
+               $('#modal-product').modal('show');
+         }
+      }
+   })
+
+   function Search_Product_KeyEnter() {
+      if (event.keyCode == 13) {
+         var pCode = $("#Search_Product").val();
+         window.location.href = '@Url.Action("MaterialWithdrawInfo", "Material", new { operation = Model.operation })&pCode=' + pCode;
+      }
+   }
+
+   function Product_Onchange() {
+      var pCode = $("#Product_Code").val();
+      window.location.href = '@Url.Action("MaterialWithdrawInfo", "Material", new { operation = Model.operation })&pCode=' + pCode;
+   }
+
+
+   function Withdrawtrans_Onchange() {
+      var tType = $("#Transaction_Type").val();
+      //alert(tType)
+      if (tType == '@Withdraw_Transaction_Type.Transfer') {
+
+         $("#divTransfer").show();
+      }
+      else {
+         $("#divTransfer").hide();
+      }
+   }
+
+
+   function Tank_Onchange() {
+
+      var tFrom = $("#Withdraw_From").val();
+      var tTo = $("#Withdraw_To").val();
+      if (tFrom != null && tFrom != '' && tTo != null && tTo != '') {
+         if (tFrom == tTo) {
+            alert('Transfer withdraw from and to select same tank no! ')
+         }
+      }
+   }
+</script>
+
+@using (Html.BeginForm("MaterialWithdrawInfo", "Material", FormMethod.Post, new { role = "form", onkeydown = "return event.keyCode!=13" }))
+{
+   @Html.AntiForgeryToken()
+   <div class="main">
+      @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Withdraw_ID)
+      @Html.HiddenFor(m => m.operation)
+      @*@Html.HiddenFor(m => m.Unit)*@
+
+      @Html.AppPageHeader(Resource.Material_Withdraw)
+      @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
+      <section class="tile" id="divModifyDetail1">
+         <div class="tile-body ">
+            @{
+   var showBtnRetrive = false;
+            }
+            @if (Model.operation == Operation.C)
+            {
+               @Html.AppLabelFor(m => m.Search_Product)
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             //@Html.AppTextboxFor(m => m.Search_Product, new { onkeydown = "Search_Product_KeyEnter(event)" }),
+                          @Html.AppDropDownListFor(m => m.Product_Code, Model.cProductlist, new { onchange = "Product_Onchange()"}),
+                          @Html.AppButtonModal("Retrive Product Information", "modal-product", AppColor.none, new { @readonly = (Model.operation == Operation.C ? false : true) })
+                       }, 4
+                  )
+               @*@Html.AppDropDownListFor(m => m.Product_Code, 6,Model.cProductlist, new { onchange = "Product_Onchange()"}),*@
+               @*@Html.AppTextboxFor(m => m.Search_Product, 6, new { onkeydown = "Search_Product_KeyEnter(event)" })*@
+            }
+            else if (Model.operation == Operation.U)
+            {
+               showBtnRetrive = true;
+            }
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Product_Code),
+                           @Html.AppLabelFor(m =>m.Product_Name)
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Product_Code, new{ @readonly=true}),
+                           @Html.AppTextboxFor(m =>m.Product_Name, new{ }),
+                           @Html.AppButtonModal("Retrive Product Information", "modal-product", AppColor.none, new { @readonly = (Model.operation == Operation.C ? false : true) , style= (showBtnRetrive ? "display:displayed;" : "display:none;" ) })
+                       }, 4
+                  )
+
+         </div>
+      </section>
+
+      <section class="tile" id="divModifyDetail2">
+         <div class="tile-body ">
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m => m.Lot_No),
+                           @Html.AppLabelFor(m =>m.Receiving_Date),
+                            @Html.AppLabelFor(m => m.Unit),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Lot_No,new{@readonly=true}),
+                           @Html.AppTextDateFor(m =>m.Receiving_Date,new{@readonly=true}),
+                            @Html.AppTextboxFor(m =>m.Unit,new{@readonly=true}),
+
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             @Html.AppLabelFor(m =>m.Total_Receiving),
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextboxDecimalFor(m =>m.Total_Receiving,new{@readonly=true}),
+                       }, 4
+                  )
+         </div>
+      </section>
+
+      <section class="tile" id="divModifyDetail3">
+         <div class="tile-body ">
+
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m => m.Withdraw_Date),
+                           @Html.AppLabelFor(m =>m.From_Time),
+                           @Html.AppLabelFor(m =>m.To_Time)
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextDateFor(m => m.Withdraw_Date),
+                           @Html.AppTextTimeFor(m =>m.From_Time),
+                           @Html.AppTextTimeFor(m =>m.To_Time)
+                       }, 4
+                  )
+
+
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {                           
+                          @Html.AppLabelFor(m => m.Transaction_Type),
+                           @Html.AppLabelFor(m => m.Qty_Withdraw),
+                           @Html.AppLabelFor(m =>m.UOM),
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {                           
+                             @Html.AppDropDownListFor(m => m.Transaction_Type, Model.cTrnsaTypelist,new { onchange = "Withdrawtrans_Onchange()"}),
+                           @Html.AppTextboxDecimalFor(m => m.Qty_Withdraw),
+                           @Html.AppDropDownListFor(m => m.UOM, Model.cUOMlist),
+                       }, 4
+                  )
+
+
+            @*<div id="divTransfer" @(Model.Transaction_Type == Withdraw_Transaction_Type.Transfer ? "" : "hidden")>*@
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Withdraw_From),
+                           @Html.AppLabelFor(m =>m.Withdraw_To),
+                       }, 4
+                  )
+
+               @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppDropDownListFor(m => m.Withdraw_From, Model.cTanklist ,new { onchange = "Tank_Onchange()"}),
+                           @Html.AppDropDownListFor(m => m.Withdraw_To, Model.cTanklist ,new { onchange = "Tank_Onchange()"}),
+                       }, 4
+                  )
+            @*</div>*@
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppLabelFor(m =>m.Transferring_Date),
+                            @Html.AppLabelFor(m =>m.Finished_Goods),
+                            @Html.AppLabelFor(m =>m.Finished_Goods_Lot_No)
+                       }, 4
+                  )
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                            @Html.AppTextDateFor(m => m.Transferring_Date),
+                            @Html.AppTextboxFor(m =>m.Finished_Goods),
+                            @Html.AppTextboxFor(m =>m.Finished_Goods_Lot_No),
+                       }, 4
+                  )
+
+
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppLabelFor(m =>m.Location),
+                            @Html.AppLabelFor(m =>m.Qty_Balance),
+                       }, 4
+                  )
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                           @Html.AppTextboxFor(m =>m.Location),
+                           @Html.AppTextboxDecimalFor(m =>m.Qty_Balance),
+                       }, 4
+                  )
+
+         
+            @Html.AppLabelFor(m => m.Remarks)
+            @Html.AppTextboxFor(m => m.Remarks)
+         </div>
+      </section>
+
+      <section class="tile">
+         <div class="tile-body ">
+            @Html.AppButton(Resource.Save, AppButtonType.submit, AppColor.blue, new { @disabled = readView })
+            @Html.AppActionLink(Resource.Cancel, Url.Action("MaterialWithdraw", "Material", new { }), AppColor.none)
+         </div>
+      </section>
+
+      @* Modal *@
+      @{ Html.RenderPartial("ProductDlg", new ProductTransactionViewModels()
+         {
+            Transaction_ID = Model.Transaction_ID,
+            ProductTrancList = Model.ProductTrancList
+         }); }
+
+   </div>
+}

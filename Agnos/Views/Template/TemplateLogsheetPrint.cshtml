@@ -1,0 +1,104 @@
+﻿@*@model Agnos.Models.TemplateLogsheetInfoViewModels
+@using SBSResourceAPI;
+@using AppFramework;
+@using AppFramework.Util;
+@{
+   ViewBag.Title = @Resource.Logsheet;
+   Layout = null;
+}
+<div class="main-content">
+   <div id="divReport" style="padding: 5px; font-size: 10px;">
+      @if (Model.Tmp_Log_Group_Rows != null)
+      {
+         <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+            @foreach (var tmpG in Model.Tmp_Log_Group_Rows)
+            {
+               if (tmpG.Tmp_Log_Header_Rows != null && tmpG.Tmp_Log_Field_Rows != null)
+               {
+                  var group = Model.cGrouplist.Where(w => w.Value == tmpG.Group_ID.Value.ToString()).FirstOrDefault();
+                  <tr>
+                     <td colspan="3">
+                        <table cellpadding="0" cellspacing="2" style="width:100%;" border="0">
+                           <tr>
+                              <td>
+                                 <table cellpadding="2" cellspacing="2" style="width:100%" border="0">
+                                    <tr>
+                                       <td colspan="3" style="text-align:left;"> <h4><strong>@group.Text</strong>  </h4> </td>
+                                    </tr>
+                                 </table>
+                              </td>
+                           </tr>
+                           @if (tmpG.Tmp_Log_Field_Rows != null && tmpG.Tmp_Log_Field_Rows.Count() > 0 && tmpG.Tmp_Log_Header_Rows != null && tmpG.Tmp_Log_Header_Rows.Count() > 0)
+                           {
+                              if (tmpG.Tmp_Log_Header_Rows != null && tmpG.Tmp_Log_Header_Rows.Count() > 0)
+                              {
+                                 <tr>
+                                    <td>
+                                       <table cellpadding="2" cellspacing="2" style="width:100%" border="1">
+                                          <tr>
+                                             <td valign="top">
+                                                @tmpG.Sub_Group_Name
+                                             </td>
+                                             @foreach (var tmphdr in tmpG.Tmp_Log_Header_Rows.OrderBy(o => o.Header_Order))
+                                             {
+                                                var hdr = Model.cHeaderlist.Where(w => w.Value == tmphdr.Header_ID.Value.ToString()).FirstOrDefault();
+                                                <td style="text-align:center">
+                                                   <strong>@hdr.Text</strong>
+                                                </td>
+                                             }
+                                          </tr>
+
+
+                                       </table>
+                                    </td>
+                                 </tr>
+                              }
+
+                              if (tmpG.Tmp_Log_Field_Rows != null && tmpG.Tmp_Log_Field_Rows.Count() > 0)
+                              {
+                                 foreach (var tmpfield in tmpG.Tmp_Log_Field_Rows.OrderBy(o => o.Field_Order))
+                                 {
+                                    var field = Model.cFieldlist.Where(w => w.Value == tmpfield.Field_ID.Value.ToString()).FirstOrDefault();
+                                    <tr>
+                                       <td>
+                                          <table cellpadding="2" cellspacing="2" style="width:100%" border="1">
+                                             <tr>
+                                                <td valign="top">
+                                                   @field.Text
+                                                </td>
+                                                @foreach (var tmphdr in tmpG.Tmp_Log_Header_Rows.OrderBy(o => o.Header_Order))
+                                                {
+                                                   var tmpmap = tmphdr.Tmp_Log_Map_Rows.Where(w=>w.Field_ID == tmpfield.Field_ID).FirstOrDefault();
+                                                   <td style="text-align:center">
+                                                      @if(tmpmap != null)
+                                                      {
+                                                         if(tmpmap.Option_Selected == Logsheet_Control_Type.Text)
+                                                         {
+                                                            @tmpmap.Option_Text
+                                                         }
+                                                         else
+                                                         {
+                                                            @:-
+                                                         }
+                                                      }
+                                                   </td>
+                                                }
+
+                                             </tr>
+                                          </table>
+                                       </td>
+                                    </tr>
+                                 }
+                              }
+                           }
+                        </table>
+                        <br />
+                     </td>
+                  </tr>
+               }
+            }
+         </table>
+      }
+
+   </div>
+</div>*@

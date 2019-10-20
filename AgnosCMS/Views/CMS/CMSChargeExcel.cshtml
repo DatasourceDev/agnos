@@ -1,0 +1,52 @@
+﻿@model AgnosCMS.Models.CMSChargeViewModels
+@using AgnosModel.Models;
+@using AgnosCMS.Models;
+@using AppFramework.Control;
+@using AppFramework.Util;
+@using System.Collections;
+@using System
+@using SBSResourceAPI;
+@using AppFramework.Util;
+@{
+    ViewBag.Title = Resource.Filling_Process;
+    var fcnt = 1;
+}
+<div class="main">
+    @if (Model.chargelist != null)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <td>No</td>
+                    <td>Drum Code</td>
+                    <td>Lot No.</td>
+                    <td>Station</td>
+                    <td>Transaction Date</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var chrg in Model.chargelist)
+                {
+                    <tr>
+                        <td>
+                            @fcnt
+                        </td>
+                        <td>
+                            @chrg.Drum_Code
+                        </td>
+                        <td>@chrg.Lot_No</td>
+                        <td>
+                            @if (chrg.CMS_Filling_Station != null)
+                            {
+                                @chrg.CMS_Filling_Station.Station_Code
+                            }
+                        </td>
+                        <td style="text-align:left">@DateUtil.ToDisplayFullDateTime(chrg.Create_On)</td>
+                    </tr>
+
+                            fcnt = fcnt + 1;
+                }
+            </tbody>
+        </table>
+    }
+</div>
