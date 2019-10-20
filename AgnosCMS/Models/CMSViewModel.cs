@@ -204,6 +204,12 @@ namespace AgnosCMS.Models
       [LocalizedDisplayName(typeof(SBSResourceAPI.Resource))]
       public string Drum_Code { get; set; }
 
+      [LocalizedDisplayName(typeof(SBSResourceAPI.Resource), "Filling Station")]
+        public Nullable<int> Filling_Station_ID { get; set; }
+
+      [LocalizedDisplayName(typeof(SBSResourceAPI.Resource), "Filling_Station")]
+      public Nullable<int> Filling_Station_ID_Dispaly { get; set; }
+
       [Required]
       [LocalizedDisplayName(typeof(SBSResourceAPI.Resource))]
       public Nullable<decimal> Initial_Weight { get; set; }

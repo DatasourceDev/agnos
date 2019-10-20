@@ -26,53 +26,6 @@
         }
     }
 
-    //function GetIntialWeight() {
-    //    $("#btnInitial_Weight").attr('disabled', 'disabled');
-    //    $("#Initial_Weight").attr('readonly', 'readonly');
-    //    $.ajax({
-    //        type: 'Get',
-    //        url: 'GetWeight2',
-    //        contentType: 'application/json; charset=utf-8',
-    //        data: {},
-    //        dataType: 'json',
-    //        success: function (data) {
-    //            if (data != null && data.weight != null) {
-    //                $("#Initial_Weight").val(data.weight);
-    //            } else {
-    //                $("#Initial_Weight").val('0');
-    //            }
-    //            $('#btnInitial_Weight').removeAttr('disabled');
-    //            $('#Initial_Weight').removeAttr('readonly');
-    //            if (data != null && data.errmsg != null && data.errmsg.length > 0) {
-    //                alert(data.errmsg);
-    //            }
-    //        }
-    //    });
-    //}
-
-    //function GetFinalWeight() {
-    //    $("#btnFinal_Weight").attr('disabled', 'disabled');
-    //    $("#Final_Weight").attr('readonly', 'readonly');
-    //    $.ajax({
-    //        type: 'Get',
-    //        url: 'GetWeight2',
-    //        contentType: 'application/json; charset=utf-8',
-    //        data: {},
-    //        dataType: 'json',
-    //        success: function (data) {
-    //            if (data != null && data.weight != null) {
-    //                $("#Final_Weight").val(data.weight);
-    //            } else {
-    //                $("#Final_Weight").val('0');
-    //            }
-    //            $('#btnFinal_Weight').removeAttr('disabled');
-    //            $('#Final_Weight').removeAttr('readonly');
-    //            if (data != null && data.errmsg != null && data.errmsg.length > 0) {
-    //                alert(data.errmsg);
-    //            }
-    //        }
-    //    });
-    //}
 
 </script>
 
@@ -84,12 +37,22 @@
       @Html.HiddenFor(m => m.Purge_ID)
       @Html.HiddenFor(m => m.operation)
       @Html.HiddenFor(m => m.Modify)
+      @Html.HiddenFor(m => m.Filling_Station_ID)
+      @Html.HiddenFor(m => m.Filling_Station_ID_Dispaly)
+
+
       @Html.AppMessage(Model.result.Code, Model.result.Field + " " + Model.result.Msg)
       <section class="tile" id="divpurge">
          @Html.AppSectionHeader(Resource.Purging_Process)
          <div class="tile-body ">
             @Html.AppLabelFor(m => m.Drum_Code, 4)
             @Html.AppTextboxFor(m => m.Drum_Code, 4, new { @readonly = (Model.operation == Operation.U ? true : false) })
+            @Html.AppLabelFor(m => m.Filling_Station_ID, 4)
+            @Html.AppMultiControl(
+                       new MvcHtmlString[] {
+                             @Html.AppTextboxFor(m => m.Filling_Station_ID_Dispaly, new {@readonly  = true}),
+                       }, 4
+                  )
             @Html.AppLabelFor(m => m.Initial_Weight)
             @Html.AppMultiControl(
                        new MvcHtmlString[] {

@@ -814,6 +814,7 @@ namespace AgnosCMS.Controllers
             model.Modify = prole.Modify;
             model.View = prole.View;
             model.result = msgresult;
+            
             var cmsService = new CMSService();
 
             if (model.operation == Operation.C)
@@ -835,6 +836,8 @@ namespace AgnosCMS.Controllers
                         model.Drum_Code = purge.Drum_Code;
                         model.Initial_Weight = purge.Initial_Weight;
                         model.Final_Weight = purge.Final_Weight;
+                        model.Filling_Station_ID_Dispaly = purge.Filling_Station_ID;
+                        model.Filling_Station_ID = purge.Filling_Station_ID;
                         if (purge.Delivery_Status == Delivery_Status.Completed)
                             model.Completed = true;
                     }
@@ -842,6 +845,17 @@ namespace AgnosCMS.Controllers
             }
             else if (model.operation == Operation.D)
                 return CMSPurgeInfo(model);
+
+            var cbService = new ComboService();
+            var cStationlist = cbService.LstFillingStationType();
+
+            var station = cStationlist.Where(w => w.Text == AppSetting.Station_Code).FirstOrDefault();
+            if (station != null)
+            {
+               model.Filling_Station_ID =NumUtil.ParseInteger( station.Value);
+               model.Filling_Station_ID_Dispaly = NumUtil.ParseInteger(station.Text);
+            }
+            
 
             return View(model);
         }
@@ -937,6 +951,7 @@ namespace AgnosCMS.Controllers
                     purge.Drum_Code = model.Drum_Code;
                     purge.Initial_Weight = model.Initial_Weight;
                     purge.Final_Weight = model.Final_Weight;
+                    purge.Filling_Station_ID = model.Filling_Station_ID;
                 }
 
                 if (model.operation == Operation.C)
